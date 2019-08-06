@@ -338,3 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/build/rF2flash
+/env
+/rF2flash.exe
+/rF2flash.spec

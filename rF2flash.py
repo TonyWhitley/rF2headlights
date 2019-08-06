@@ -61,7 +61,8 @@ def main() -> None:
 
     headlightFlash_o = HeadlightFlash()
 
-    SetTimer(headlightFlash_o.flash, 5_000)
+    for x in range(1,10):
+        SetTimer(headlightFlash_o.flash, 5_000 * x)
 
     while True:
         if ms.kbhit():
