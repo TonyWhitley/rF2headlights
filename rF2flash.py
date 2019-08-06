@@ -80,7 +80,7 @@ class HeadlightFlash:
             if self._info.isTrackLoaded():
                 if self._info.isOnTrack():
                     self.headlightState = self.__headlights()
-                    self._count = 20
+                    self._count = 8 # 4 flashes
                     self._toggle()
                 else:
                     print('Not on track')
