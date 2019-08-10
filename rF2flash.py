@@ -13,7 +13,7 @@ from threading import Timer
 from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import sharedMemoryAPI
 
-BUILD_REVISION = 8 # The git branch commit count
+BUILD_REVISION = 9 # The git branch commit count
 versionStr = 'rF2flash V0.0.%d' % BUILD_REVISION
 versionDate = '2019-08-10'
 
@@ -68,13 +68,13 @@ def main() -> None:
     headlightFlash_o = HeadlightFlash()
 
     #testing:
-    if 1:
+    if 1:   # pylint: disable=using-constant-test
         for x in range(1, 50):
             SetTimer(5_000 * x, headlightFlash_o.pit_limiter_flashes)
-    if 0:
+    if 0:   # pylint: disable=using-constant-test
         for x in range(1, 50):
             SetTimer(5_000 * x, headlightFlash_o.pit_lane_flashes)
-    if 0:
+    if 0:   # pylint: disable=using-constant-test
         for x in range(1, 10):
             SetTimer(5_000 * x, headlightFlash_o.four_flashes)
 
@@ -87,7 +87,7 @@ def main() -> None:
                 headlightFlash_o.four_flashes()
 
 class HeadlightFlash:
-    """ 
+    """
     Flash the headlights on and off by sending the key
     that toggles the headlights.
     """
@@ -102,7 +102,11 @@ class HeadlightFlash:
         # pylint: disable=unnecessary-pass
         pass
 
-    def count_down(self) -> None:
+    def count_down(self) -> bool:
+        """
+        Stopping callback function
+        Returns True is count as expired.
+        """
         self._count -= 1
         return self._count <= 0
     def four_flashes(self) -> None:
@@ -154,19 +158,19 @@ class HeadlightFlash:
             PressReleaseKey(headlightToggle)
         self._flashing = False
 
-    def __are_headlights_on(self):
+    def __are_headlights_on(self) -> bool:
         """ Are they on? """
         return self._info.playersVehicleTelemetry().mHeadlights
-    def __not_in_pit_lane(self):
+    def __not_in_pit_lane(self) -> bool:
         """ Used to stop when not in the pit lane """
         return not self._info.playersVehicleScoring().mInPits
-    def __pit_limiter_is_off(self):
+    def __pit_limiter_is_off(self) -> bool:
         """ Used to stop when the pit limiter is off """
         return not self._info.playersVehicleTelemetry().mSpeedLimiter
-    def __ignition_is_on(self):
+    def __ignition_is_on(self) -> bool:
         """ Is it pn? """
         return self._info.playersVehicleTelemetry().mIgnitionStarter
-    def flashing(self):
+    def flashing(self) -> bool:
         """ Are the headlights being flashed? """
         return self._flashing
 
