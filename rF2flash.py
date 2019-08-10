@@ -13,9 +13,9 @@ from threading import Timer
 from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import sharedMemoryAPI
 
-BUILD_REVISION = 7 # The git branch commit count
+BUILD_REVISION = 8 # The git branch commit count
 versionStr = 'rF2flash V0.0.%d' % BUILD_REVISION
-versionDate = '2019-08-06'
+versionDate = '2019-08-10'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -29,10 +29,10 @@ flashButton = '#'
 headlightToggle = 'DIK_H'
 
 #################################################################################
-def SetTimer(callback, mS: int) -> Timer:
+def SetTimer(mS, callback, _args=None) -> Timer:
     """ docstring """
     if mS > 0:
-        timer = Timer(mS / 1000, callback)
+        timer = Timer(mS / 1000, callback, args=_args)
         timer.start()
     else:
         pass # TBD delete timer?
@@ -68,8 +68,15 @@ def main() -> None:
     headlightFlash_o = HeadlightFlash()
 
     #testing:
-    for x in range(1, 10):
-        SetTimer(headlightFlash_o.flash, 5_000 * x)
+    if 1:
+        for x in range(1, 50):
+            SetTimer(5_000 * x, headlightFlash_o.pit_limiter_flashes)
+    if 0:
+        for x in range(1, 50):
+            SetTimer(5_000 * x, headlightFlash_o.pit_lane_flashes)
+    if 0:
+        for x in range(1, 10):
+            SetTimer(5_000 * x, headlightFlash_o.four_flashes)
 
     # kbhit only works when this program has focus,
     # not when rF is running
@@ -77,11 +84,15 @@ def main() -> None:
         if ms.kbhit():
             _key = ms.getch()
             if _key == b'#':
-                headlightFlash_o.flash()
+                headlightFlash_o.four_flashes()
 
 class HeadlightFlash:
-    """ docstring """
+    """ 
+    Flash the headlights on and off by sending the key
+    that toggles the headlights.
+    """
     headlightState = None
+    _flashing = False
     _count = 0
     _info = sharedMemoryAPI.SimInfoAPI()
     print(_info.versionCheckMsg)
@@ -90,38 +101,74 @@ class HeadlightFlash:
         """ docstring """
         # pylint: disable=unnecessary-pass
         pass
-    def flash(self) -> None:
-        """ docstring """
+
+    def count_down(self) -> None:
+        self._count -= 1
+        return self._count <= 0
+    def four_flashes(self) -> None:
+        """ Flash four times (e.g. for overtaking) """
+        self._count = 8 # 4 flashes
+        self.start_flashing(self.count_down)
+
+    def pit_limiter_flashes(self) -> None:
+        """ Flash while the pit limiter is on """
+        self.start_flashing(self.__pit_limiter_is_off)
+
+    def pit_lane_flashes(self) -> None:
+        """ Flash while in the pit lane """
+        self.start_flashing(self.__not_in_pit_lane)
+
+    def start_flashing(self, stopping_callback) -> None:
+        """ Start flashing (if not already) """
+        if not self._flashing:
+            self.headlightState = self.__are_headlights_on()
+            self._toggle(stopping_callback)
+
+    def _toggle(self, stopping_callback) -> None:
+        """ Toggle the headlights unless it's time to stop """
         if self._info.isRF2running():
             if self._info.isTrackLoaded():
                 if self._info.isOnTrack():
-                    self.headlightState = self.__headlights()
-                    self._count = 8 # 4 flashes
-                    self._toggle()
+                    if self.__ignition_is_on():
+                        if not stopping_callback():
+                            self._flashing = True
+                            PressReleaseKey(headlightToggle)
+                            __flashTimer = SetTimer(20,
+                                                    self._toggle,
+                                                    _args=[stopping_callback])
+                            # type: ignore
+                            return
                 else:
                     print('Not on track')
             else:
                 print('Track not loaded')
         else:
             print('rFactor 2 not running')
+        self.stop_flashing()
 
-    def _toggle(self) -> None:
+    def stop_flashing(self):
         """ docstring """
-        PressReleaseKey(headlightToggle)
-        __flashTimer = SetTimer(self.__flashTimeout, 20) # type: ignore
+        # Check that headlights in same start as originally
+        if self.headlightState != self.__are_headlights_on():
+            # toggle the headlights again
+            PressReleaseKey(headlightToggle)
+        self._flashing = False
 
-    def __flashTimeout(self) -> None:
-        """ docstring """
-        self._count -= 1
-        if self._count:
-            self._toggle()
-        else:
-            # Check that headlights in same start as originally
-            if self.headlightState != self.__headlights():
-                # toggle the headlights again
-                PressReleaseKey(headlightToggle)
-    def __headlights(self):
-        """ docstring """
+    def __are_headlights_on(self):
+        """ Are they on? """
         return self._info.playersVehicleTelemetry().mHeadlights
+    def __not_in_pit_lane(self):
+        """ Used to stop when not in the pit lane """
+        return not self._info.playersVehicleScoring().mInPits
+    def __pit_limiter_is_off(self):
+        """ Used to stop when the pit limiter is off """
+        return not self._info.playersVehicleTelemetry().mSpeedLimiter
+    def __ignition_is_on(self):
+        """ Is it pn? """
+        return self._info.playersVehicleTelemetry().mIgnitionStarter
+    def flashing(self):
+        """ Are the headlights being flashed? """
+        return self._flashing
+
 if __name__ == "__main__":
     main()
