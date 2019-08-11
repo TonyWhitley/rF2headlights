@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>da54e964-6371-41bf-acdd-eae84460b69f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>rF2flash.py</StartupFile>
+    <StartupFile>gui.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,10 +22,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="configIni.py" />
     <Compile Include="directInputKeySend.py" />
+    <Compile Include="gui.py" />
     <Compile Include="rF2data.py" />
     <Compile Include="rF2flash.py" />
     <Compile Include="sharedMemoryAPI.py" />
+    <Compile Include="wheel.py" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">

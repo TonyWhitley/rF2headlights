@@ -13,9 +13,9 @@ from threading import Timer
 from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import sharedMemoryAPI
 
-BUILD_REVISION = 9 # The git branch commit count
+BUILD_REVISION = 10 # The git branch commit count
 versionStr = 'rF2flash V0.0.%d' % BUILD_REVISION
-versionDate = '2019-08-10'
+versionDate = '2019-08-11'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -122,13 +122,23 @@ class HeadlightFlash:
         """ Flash while in the pit lane """
         self.start_flashing(self.__not_in_pit_lane)
 
+    def toggle(self) -> None:
+        """
+        Now this program is controlling the headlights a replacement
+        for the headlight control is needed.
+        We could have separate on and off controls too, just call
+        are_headlights_on() to decide if they need to be toggled.
+        """
+        PressReleaseKey(headlightToggle)
+
+
     def start_flashing(self, stopping_callback) -> None:
         """ Start flashing (if not already) """
         if not self._flashing:
-            self.headlightState = self.__are_headlights_on()
-            self._toggle(stopping_callback)
+            self.headlightState = self.are_headlights_on()
+            self.__toggle(stopping_callback)
 
-    def _toggle(self, stopping_callback) -> None:
+    def __toggle(self, stopping_callback) -> None:
         """ Toggle the headlights unless it's time to stop """
         if self._info.isRF2running():
             if self._info.isTrackLoaded():
@@ -138,7 +148,7 @@ class HeadlightFlash:
                             self._flashing = True
                             PressReleaseKey(headlightToggle)
                             __flashTimer = SetTimer(20,
-                                                    self._toggle,
+                                                    self.__toggle,
                                                     _args=[stopping_callback])
                             # type: ignore
                             return
@@ -153,12 +163,12 @@ class HeadlightFlash:
     def stop_flashing(self):
         """ docstring """
         # Check that headlights in same start as originally
-        if self.headlightState != self.__are_headlights_on():
+        if self.headlightState != self.are_headlights_on():
             # toggle the headlights again
             PressReleaseKey(headlightToggle)
         self._flashing = False
 
-    def __are_headlights_on(self) -> bool:
+    def are_headlights_on(self) -> bool:
         """ Are they on? """
         return self._info.playersVehicleTelemetry().mHeadlights
     def __not_in_pit_lane(self) -> bool:
