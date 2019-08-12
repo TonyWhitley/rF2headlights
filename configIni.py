@@ -2,17 +2,17 @@ from configparser import ConfigParser
 import os
 
 configFileName = 'headlightControls.ini'
-sections = ['headlight controls', 'miscellaneous']
+sections = ['headlight controls', 'rFactor Toggle', 'miscellaneous']
 headlight_controlsValues = {
-  'controller' : 'Not yet selected',
-  'toggle' : '0',
-  'flash' : '0',
-  'on' : '0',
-  'off' : '0'
+  'Controller' : 'Not yet selected',
+  'Toggle headlights' : '0',
+  'Flash headlights' : '0',
+  'Headlights on' : '0',
+  'Headlights off' : '0'
   }
 rfactor_headlight_controlValues = {
-  'controller' : 'Not yet selected',
-  'toggle' : '0'
+  'Controller' : 'Not yet selected',
+  'rFactor Toggle' : '0'
   }
 miscValues = {
   'pit_limiter'     : '1',    # 1: flash headlights when pit limiter on
@@ -52,6 +52,7 @@ class Config:
   def get(self, section, val):
     try:
       # get existing value
+      return self.config.get(section, val)
       if val in ['controller'] :
         return self.config.get(section, val)
       else:

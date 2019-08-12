@@ -29,7 +29,6 @@ class Controller:
     _name = 'Error getting controller name'
     try:
       _name = controller.get_name()
-      print('get_name()') # DEBUG
       # _name = 'Logitech® G27 Shifter' # DEBUG 2
       # print('DEBUG pygame version: %s' % pygame.version.ver)
     except UnicodeError as e:
@@ -42,6 +41,7 @@ class Controller:
     return _name.strip() # e.g. strip spaces from "usb gamepad   "
   def __init__(self):
     pygame.init()
+    #pygame.display.set_mode(size=(1,1))
     pygame.event.set_blocked(pygame.MOUSEMOTION) # Don't want mouse events
     self.num_controllers = pygame.joystick.get_count()
     if self.num_controllers < 1:
@@ -89,22 +89,26 @@ class Controller:
     """ Run pygame and tk to get latest events """
     for event in pygame.event.get(): # User did something
         if event.type == pygame.QUIT: # If user clicked close
-            return
+            return False
         # Possible controller actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
         if event.type == pygame.JOYAXISMOTION:
-            callback()
+            callback(event)
         if event.type == pygame.JOYBUTTONDOWN:
-            callback()
+            callback(event)
         if event.type == pygame.JOYBUTTONUP:
-            callback()
+            callback(event)
+        if event.type == pygame.KEYDOWN:
+            callback(event)
     if tk_main_dialog:  # Tk is running as well
       try:
         tk_main_dialog.update()
       except:
         pass # tk_main_dialog has been destroyed.
-
+        pygame.event.post(
+            pygame.event.Event(pygame.QUIT))
+    return True
 
   def run(self, callback, tk_main_dialog = None):
     """ Run pygame and tk event loops """
-    while 1:
-      self.pygame_tk_check(callback, tk_main_dialog)
+    while self.pygame_tk_check(callback, tk_main_dialog):
+        pass

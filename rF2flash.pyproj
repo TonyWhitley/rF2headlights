@@ -25,9 +25,15 @@
     <Compile Include="configIni.py" />
     <Compile Include="directInputKeySend.py" />
     <Compile Include="gui.py" />
+    <Compile Include="pygametest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="rF2data.py" />
     <Compile Include="rF2flash.py" />
     <Compile Include="sharedMemoryAPI.py" />
+    <Compile Include="thorpytest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="wheel.py" />
   </ItemGroup>
   <ItemGroup>
