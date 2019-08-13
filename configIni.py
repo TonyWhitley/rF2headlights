@@ -2,18 +2,11 @@ from configparser import ConfigParser
 import os
 
 configFileName = 'headlightControls.ini'
-sections = ['headlight controls', 'rFactor Toggle', 'miscellaneous']
-headlight_controlsValues = {
-  'Controller' : 'Not yet selected',
-  'Toggle headlights' : '0',
-  'Flash headlights' : '0',
-  'Headlights on' : '0',
-  'Headlights off' : '0'
-  }
-rfactor_headlight_controlValues = {
-  'Controller' : 'Not yet selected',
-  'rFactor Toggle' : '0'
-  }
+sections = ['Toggle headlights',
+            'Flash headlights',
+            'Headlights on',
+            'Headlights off',
+            'rFactor Toggle']
 miscValues = {
   'pit_limiter'     : '1',    # 1: flash headlights when pit limiter on
   'pit_lane'        : '1',    # 1: flash headlights when in pit lane
@@ -26,10 +19,9 @@ class Config:
     self.config = ConfigParser()
 
     # set default values
-    for val, default in headlight_controlsValues.items():
-        self.set('headlight controls', val, default)
-    for val, default in rfactor_headlight_controlValues.items():
-        self.set('rfactor headlight control', val, default)
+    for section in sections:
+        self.set(section, 'Controller', 'Not yet selected')
+        self.set(section, 'Control', '0')
     for val, default in miscValues.items():
         self.set('miscellaneous', val, default)
     
