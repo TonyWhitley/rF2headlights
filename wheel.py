@@ -52,6 +52,7 @@ class Controller:
     self.controllerNames = []
     for j in range(self.num_controllers):
       _j = pygame.joystick.Joystick(j)
+      _j.init()
       self.controllerNames.append(self.get_name(_j))
 
   def selectController(self, controllerName):
@@ -61,7 +62,7 @@ class Controller:
       if self.get_name(_j) == controllerName:
         self.controller = pygame.joystick.Joystick(j)
 
-    self.controller.init()
+    #self.controller.init()
     self.num_axes = self.controller.get_numaxes()
     self.axis_state = [0] * self.num_axes
     self.num_buttons = self.controller.get_numbuttons()

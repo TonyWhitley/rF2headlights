@@ -1,6 +1,8 @@
 # Inherit Python mapping of The Iron Wolf's rF2 Shared Memory Tools
 # and add access functions to it.
 import rF2data
+# pylint: disable=bad-indentation
+# pylint: disable=invalid-name
 
 class SimInfoAPI(rF2data.SimInfo):
   """
@@ -80,7 +82,6 @@ class SimInfoAPI(rF2data.SimInfo):
     True: rF2 is running and the player is on track
     """
     realtime = self.Rf2Ext.mInRealtimeFC
-    ret = realtime != 0
     return realtime != 0
 
   def isAiDriving(self):
@@ -144,9 +145,9 @@ def test_main():
     driver = Cbytestring2Python(info.playersVehicleScoring().mDriverName)
     print('%s Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
-    vehicleName = Cbytestring2Python(info.playersVehicleScoring().mVehicleName)
+    _vehicleName = Cbytestring2Python(info.playersVehicleScoring().mVehicleName)
     trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
-    vehicleClass = Cbytestring2Python(info.playersVehicleScoring().mVehicleClass)
+    _vehicleClass = Cbytestring2Python(info.playersVehicleScoring().mVehicleClass)
 
     started = info.Rf2Ext.mSessionStarted
     realtime = info.Rf2Ext.mInRealtimeFC
