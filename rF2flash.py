@@ -10,12 +10,14 @@ import msvcrt as ms
 import sys
 from threading import Timer
 
+from configIni import Config
 from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import sharedMemoryAPI
+from gui import run
 
-BUILD_REVISION = 10 # The git branch commit count
+BUILD_REVISION = 14 # The git branch commit count
 versionStr = 'rF2flash V0.0.%d' % BUILD_REVISION
-versionDate = '2019-08-11'
+versionDate = '2019-08-13'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -85,6 +87,46 @@ def main() -> None:
             _key = ms.getch()
             if _key == b'#':
                 headlightFlash_o.four_flashes()
+
+def run_main():
+    config_o = Config()
+    if config_o.get('rFactor Toggle', 'controller') == 'keyboard':
+        headlightToggle = config_o.get('rFactor Toggle', 'control')
+        if headlightToggle in DirectInputKeyCodeTable: # (it must be)
+            __headlightToggleKeycode = headlightToggle[4:]
+        else:
+            print('\nheadlight toggle button "%s" not recognised.\nIt must be one of:' %
+                  headlightToggle)
+            for _keyCode in DirectInputKeyCodeTable:
+                print(_keyCode, end=', ')
+            quit_program(99)
+
+        headlightFlash_o = HeadlightFlash()
+        pit_limiter = config_o.get('miscellaneous', 'pit_limiter')
+        pit_lane = config_o.get('miscellaneous', 'pit_lane')
+        _o_run = run()
+        while True:
+            _cmd = _o_run.running()
+            print(_cmd)
+            if _cmd == 'Headlights off':
+                if headlightFlash_o.are_headlights_on():
+                    headlightFlash_o.toggle()
+            if _cmd == 'Headlights on':
+                if not headlightFlash_o.are_headlights_on():
+                    headlightFlash_o.toggle()
+            if _cmd == 'Flash headlights':
+                 headlightFlash_o.four_flashes()
+            if _cmd == 'Toggle headlights':
+                 headlightFlash_o.toggle()
+            if _cmd == 'QUIT':
+                break
+            # _o_run.running() needs to return every second (say)
+            # so that we can monitor the pit lane/limiter state
+            if pit_limiter:
+                headlightFlash_o.pit_limiter_flashes()
+            if pit_lane:
+                headlightFlash_o.pit_lane_flashes()
+
 
 class HeadlightFlash:
     """
@@ -185,4 +227,5 @@ class HeadlightFlash:
         return self._flashing
 
 if __name__ == "__main__":
-    main()
+    #main()
+    run_main()

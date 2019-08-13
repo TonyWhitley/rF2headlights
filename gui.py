@@ -15,6 +15,7 @@ import tkinter.font as font
 
 from configIni import Config
 from wheel import Controller
+from directInputKeySend import KeycodeToDIK
 
 headlight_controls = {
   'Toggle headlights'   : {
@@ -165,7 +166,6 @@ class ControlFrame(Tab):
                                           textvariable=control['svControl'],
                                           fg='SystemInactiveCaptionText',
                                           relief=tk.GROOVE,
-                                          width=1,
                                           borderwidth=4,
                                           anchor='e',
                                           padx=4)
@@ -187,8 +187,9 @@ class ControlFrame(Tab):
         # Run pygame and tk to get latest input
         controller_o.pygame_tk_check(self.pygame_callback, self.parentFrame)
     if tk_event:
-        self.headlight_controls[name]['svControl'].set(tk_event.char)
-        self.headlight_controls[name]['tkLabel'].configure(text=str(tk_event.char))
+        dik = KeycodeToDIK(tk_event.keycode)
+        self.headlight_controls[name]['svControl'].set(dik)
+        self.headlight_controls[name]['tkLabel'].configure(text=dik)
         self.headlight_controls[name]['ControllerName'].configure(text='keyboard')
         self.headlight_controls[name]['svControllerName'].set('keyboard')
         return tk_event.char
@@ -257,12 +258,94 @@ def main():
     """ docstring """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
-    tabOptions = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
-    tabOptions.grid()
+    tabConfigureFlash = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
+    tabConfigureFlash.grid()
 
-    __o_tab = Tab(tabOptions, _root)
+    __o_tab = Tab(tabConfigureFlash, _root)
     #root.mainloop()
 
+
+
+
+
+
+
+class Run:
+    controller_o = Controller()
+    config_o = Config()
+    root = None
+    xyPadding = 10
+  
+    def tk_event_callback(self, _event):
+        global tk_event
+        tk_event = _event
+
+    def __init__(self, parentFrame, root):
+        """ Put this into the parent frame """
+        self.root = root
+        self.parentFrame = parentFrame
+        root.bind('<KeyPress>', self.tk_event_callback)
+        tk.Label(self.parentFrame,
+             text="This window is only needed for keyboard input").grid(row=0, column=0)
+        tk.Label(self.parentFrame,
+             text="You can minimise it if you're only using controller buttons").grid(row=1, column=0)
+
+    def pygame_callback(self, event):
+         """ docstring """
+         #print(event)
+         self.pygame_event = event
+
+    def running(self):
+        """ docstring """
+        global tk_event
+        tk_event = None
+        self.pygame_event = None
+        while True:
+            while not tk_event and not self.pygame_event:
+                # Run pygame and tk to get latest input
+                self.controller_o.pygame_tk_check(self.pygame_callback,
+                                                  self.parentFrame)
+            if tk_event:
+                dik = KeycodeToDIK(tk_event.keycode)
+                for cmd in headlight_controls:
+                    if self.config_o.get(cmd, 'Controller') == 'keyboard':
+                        if dik == self.config_o.get(cmd, 'Control'):
+                            return cmd
+                tk_event = None
+            if self.pygame_event:
+                if self.pygame_event == 'QUIT':
+                    return 'QUIT'
+                try:
+                    _button = str(self.pygame_event.button)
+                    _joy = self.controller_o.controllerNames[self.pygame_event.joy]
+                    #print(_joy, _button)
+                    for cmd in headlight_controls:
+                        if self.config_o.get(cmd, 'Controller') == _joy:
+                            if _button == self.config_o.get(cmd, 'Control'):
+                                return cmd
+                except: #not a joystick button
+                    pass
+                self.pygame_event = None
+
+def run():
+    """ docstring """
+    _root = tk.Tk()
+    _root.title('%s' % (versionStr))
+    runWindow = ttk.Frame(root, width=200, height=200, relief='sunken', borderwidth=5)
+    runWindow.grid()
+    _o_run = Run(runWindow, _root)
+    return _o_run
+
+def run_main():
+    _o_run = run()
+    while True:
+        _cmd = _o_run.running()
+        print(_cmd)
+        if _cmd == 'QUIT':
+            break
+
 if __name__ == '__main__':
-    # To run this tab by itself for development
+    # To run this tab by itself 
     main()
+    # for development:
+    #run_main()

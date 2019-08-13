@@ -90,14 +90,16 @@ class Controller:
     """ Run pygame and tk to get latest events """
     for event in pygame.event.get(): # User did something
         if event.type == pygame.QUIT: # If user clicked close
-            return False
+            callback('QUIT')
         # Possible controller actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
         if event.type == pygame.JOYAXISMOTION:
-            callback(event)
+            # ignore callback(event)
+            pass
         if event.type == pygame.JOYBUTTONDOWN:
             callback(event)
         if event.type == pygame.JOYBUTTONUP:
-            callback(event)
+            # ignore callback(event)
+            pass
         if event.type == pygame.KEYDOWN:
             callback(event)
     if tk_main_dialog:  # Tk is running as well

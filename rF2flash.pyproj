@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>da54e964-6371-41bf-acdd-eae84460b69f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>gui.py</StartupFile>
+    <StartupFile>rF2flash.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -42,6 +42,7 @@
     </Interpreter>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="makeConfigurer.bat" />
     <Content Include="makeexe.bat" />
     <Content Include="pyInstallerSetup.bat" />
     <Content Include="requirements.txt" />

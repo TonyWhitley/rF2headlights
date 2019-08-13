@@ -344,3 +344,6 @@ healthchecksdb
 /rF2flash.spec
 /.mypy_cache/3.6
 /research
+/build/gui
+/gui.spec
+/gui.exe
