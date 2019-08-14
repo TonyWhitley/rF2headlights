@@ -13,6 +13,6 @@ rem             it's best to keep it for error messages
 pyinstaller ^
   --onefile ^
   --distpath . ^
-  "%~dp0\rF2flash.py "
+  "%~dp0\rF2headlights.py "
 pause
 

@@ -6,18 +6,17 @@ they are in the same state afterwards in case a command was missed.
 """
 # pylint: disable=invalid-name
 
-import msvcrt as ms
 import sys
 from threading import Timer
 
 from configIni import Config
 from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import sharedMemoryAPI
-from gui import run
+from gui import run, KEYBOARD
 
 BUILD_REVISION = 14 # The git branch commit count
-versionStr = 'rF2flash V0.0.%d' % BUILD_REVISION
-versionDate = '2019-08-13'
+versionStr = 'rF2headlights V0.0.%d' % BUILD_REVISION
+versionDate = '2019-08-14'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -26,9 +25,6 @@ program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
  "Icon made by https://www.flaticon.com/authors/those-icons"
 
-
-flashButton = '#'
-headlightToggle = 'DIK_H'
 
 #################################################################################
 def SetTimer(mS, callback, _args=None) -> Timer:
@@ -56,84 +52,41 @@ def quit_program(errorCode: int) -> None:
     sys.exit(errorCode)
 #################################################################################
 
-def main() -> None:
+def main():
     """ docstring """
-    if headlightToggle in DirectInputKeyCodeTable: # (it must be)
-        __headlightToggleKeycode = headlightToggle[4:]
-    else:
-        print('\nheadlight toggle button "%s" not recognised.\nIt must be one of:' %
-              headlightToggle)
-        for _keyCode in DirectInputKeyCodeTable:
-            print(_keyCode, end=', ')
-        quit_program(99)
-
-    headlightFlash_o = HeadlightFlash()
-
-    #testing:
-    if 1:   # pylint: disable=using-constant-test
-        for x in range(1, 50):
-            SetTimer(5_000 * x, headlightFlash_o.pit_limiter_flashes)
-    if 0:   # pylint: disable=using-constant-test
-        for x in range(1, 50):
-            SetTimer(5_000 * x, headlightFlash_o.pit_lane_flashes)
-    if 0:   # pylint: disable=using-constant-test
-        for x in range(1, 10):
-            SetTimer(5_000 * x, headlightFlash_o.four_flashes)
-
-    # kbhit only works when this program has focus,
-    # not when rF is running
-    while True:
-        if ms.kbhit():
-            _key = ms.getch()
-            if _key == b'#':
-                headlightFlash_o.four_flashes()
-
-def run_main():
+    headlightFlash_o = HeadlightControl()
     config_o = Config()
-    if config_o.get('rFactor Toggle', 'controller') == 'keyboard':
-        headlightToggle = config_o.get('rFactor Toggle', 'control')
-        if headlightToggle in DirectInputKeyCodeTable: # (it must be)
-            __headlightToggleKeycode = headlightToggle[4:]
-        else:
-            print('\nheadlight toggle button "%s" not recognised.\nIt must be one of:' %
-                  headlightToggle)
-            for _keyCode in DirectInputKeyCodeTable:
-                print(_keyCode, end=', ')
-            quit_program(99)
-
-        headlightFlash_o = HeadlightFlash()
-        pit_limiter = config_o.get('miscellaneous', 'pit_limiter')
-        pit_lane = config_o.get('miscellaneous', 'pit_lane')
-        _o_run = run()
-        while True:
-            _cmd = _o_run.running()
-            print(_cmd)
-            if _cmd == 'Headlights off':
-                if headlightFlash_o.are_headlights_on():
-                    headlightFlash_o.toggle()
-            if _cmd == 'Headlights on':
-                if not headlightFlash_o.are_headlights_on():
-                    headlightFlash_o.toggle()
-            if _cmd == 'Flash headlights':
-                 headlightFlash_o.four_flashes()
-            if _cmd == 'Toggle headlights':
-                 headlightFlash_o.toggle()
-            if _cmd == 'QUIT':
-                break
-            # _o_run.running() needs to return every second (say)
-            # so that we can monitor the pit lane/limiter state
-            if pit_limiter:
-                headlightFlash_o.pit_limiter_flashes()
-            if pit_lane:
-                headlightFlash_o.pit_lane_flashes()
+    pit_limiter = config_o.get('miscellaneous', 'pit_limiter')
+    pit_lane = config_o.get('miscellaneous', 'pit_lane')
+    _o_run = run()
+    while True:
+        _cmd = _o_run.running()
+        print(_cmd)
+        if _cmd == 'Headlights off':
+            headlightFlash_o.on()
+        if _cmd == 'Headlights on':
+            headlightFlash_o.off()
+        if _cmd == 'Flash headlights':
+            headlightFlash_o.four_flashes()
+        if _cmd == 'Toggle headlights':
+            headlightFlash_o.toggle()
+        if _cmd == 'QUIT':
+            break
+        # _o_run.running() needs to return every second (say)
+        # so that we can monitor the pit lane/limiter state
+        if pit_limiter:
+            headlightFlash_o.pit_limiter_flashes()
+        if pit_lane:
+            headlightFlash_o.pit_lane_flashes()
 
 
-class HeadlightFlash:
+class HeadlightControl:
     """
     Flash the headlights on and off by sending the key
     that toggles the headlights.
     """
     headlightState = None
+    headlightToggleDIK = None
     _flashing = False
     _count = 0
     _info = sharedMemoryAPI.SimInfoAPI()
@@ -141,8 +94,20 @@ class HeadlightFlash:
 
     def __init__(self) -> None:
         """ docstring """
-        # pylint: disable=unnecessary-pass
-        pass
+        config_o = Config()
+        if config_o.get('rFactor Toggle', 'controller') == KEYBOARD:
+            self.headlightToggleDIK = config_o.get('rFactor Toggle', 'control')
+            if self.headlightToggleDIK not in DirectInputKeyCodeTable: # (it must be)
+                print('\nheadlight toggle button "%s" not recognised.\n'\
+                      'It must be one of:' %
+                      self.headlightToggleDIK)
+                for _keyCode in DirectInputKeyCodeTable:
+                    print(_keyCode, end=', ')
+                quit_program(99)
+        else:
+            print('\nHeadlight toggle control must be a key.\n')
+            quit_program(99)
+
 
     def count_down(self) -> bool:
         """
@@ -164,14 +129,22 @@ class HeadlightFlash:
         """ Flash while in the pit lane """
         self.start_flashing(self.__not_in_pit_lane)
 
+    def on(self) -> None:
+        """ Turn them on regardless """
+        if not self.are_headlights_on():
+            self.toggle()
+
+    def off(self) -> None:
+        """ Turn them off regardless """
+        if self.are_headlights_on():
+            self.toggle()
+
     def toggle(self) -> None:
         """
         Now this program is controlling the headlights a replacement
         for the headlight control is needed.
-        We could have separate on and off controls too, just call
-        are_headlights_on() to decide if they need to be toggled.
         """
-        PressReleaseKey(headlightToggle)
+        PressReleaseKey(self.headlightToggleDIK)
 
 
     def start_flashing(self, stopping_callback) -> None:
@@ -188,7 +161,7 @@ class HeadlightFlash:
                     if self.__ignition_is_on():
                         if not stopping_callback():
                             self._flashing = True
-                            PressReleaseKey(headlightToggle)
+                            self.toggle()
                             __flashTimer = SetTimer(20,
                                                     self.__toggle,
                                                     _args=[stopping_callback])
@@ -207,7 +180,7 @@ class HeadlightFlash:
         # Check that headlights in same start as originally
         if self.headlightState != self.are_headlights_on():
             # toggle the headlights again
-            PressReleaseKey(headlightToggle)
+            self.toggle()
         self._flashing = False
 
     def are_headlights_on(self) -> bool:
@@ -227,5 +200,4 @@ class HeadlightFlash:
         return self._flashing
 
 if __name__ == "__main__":
-    #main()
-    run_main()
+    main()

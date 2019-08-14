@@ -13,6 +13,7 @@ rem             it's best to keep it for error messages
 pyinstaller ^
   --onefile ^
   --distpath . ^
+  --name rF2headlightsConfigurer ^
   "%~dp0\gui.py "
 pause
 

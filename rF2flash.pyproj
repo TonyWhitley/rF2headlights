@@ -3,8 +3,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>da54e964-6371-41bf-acdd-eae84460b69f</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
-    <StartupFile>rF2flash.py</StartupFile>
+    <ProjectHome>
+    </ProjectHome>
+    <StartupFile>rF2headlights.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -26,7 +27,7 @@
     <Compile Include="directInputKeySend.py" />
     <Compile Include="gui.py" />
     <Compile Include="rF2data.py" />
-    <Compile Include="rF2flash.py" />
+    <Compile Include="rF2headlights.py" />
     <Compile Include="sharedMemoryAPI.py" />
     <Compile Include="wheel.py" />
   </ItemGroup>

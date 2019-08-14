@@ -338,12 +338,13 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/build/rF2flash
 /env
-/rF2flash.exe
-/rF2flash.spec
 /.mypy_cache/3.6
 /research
-/build/gui
 /gui.spec
 /gui.exe
+/build
+/rF2headlightsConfigurer.spec
+/rF2headlightsConfigurer.exe
+/rF2headlights.spec
+/rF2headlights.exe
