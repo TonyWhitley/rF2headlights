@@ -10,13 +10,13 @@ import sys
 from threading import Timer
 
 from configIni import Config
-from directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
-import sharedMemoryAPI
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
+import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD
 
-BUILD_REVISION = 14 # The git branch commit count
-versionStr = 'rF2headlights V0.0.%d' % BUILD_REVISION
-versionDate = '2019-08-14'
+BUILD_REVISION = 17 # The git branch commit count
+versionStr = 'rF2headlights V0.2.%d' % BUILD_REVISION
+versionDate = '2019-08-15'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \

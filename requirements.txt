@@ -9,6 +9,7 @@ mypy==0.720
 mypy-extensions==0.4.1
 pefile==2019.4.18
 pip==19.2.1
+pygame==1.9.6
 PyInstaller==3.5
 pylint==2.3.1
 pywin32-ctypes==0.2.0

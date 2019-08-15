@@ -10,9 +10,9 @@
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>rF2flash</Name>
+    <Name>rF2headlights</Name>
     <RootNamespace>rF2flash</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|env1|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,11 +24,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="configIni.py" />
-    <Compile Include="directInputKeySend.py" />
     <Compile Include="gui.py" />
-    <Compile Include="rF2data.py" />
+    <Compile Include="pyDirectInputKeySend\directInputKeySend.py" />
+    <Compile Include="pyDirectInputKeySend\__init__.py" />
+    <Compile Include="pyRfactor2SharedMemory\rF2data.py" />
+    <Compile Include="pyRfactor2SharedMemory\sharedMemoryAPI.py" />
+    <Compile Include="pyRfactor2SharedMemory\__init__.py" />
     <Compile Include="rF2headlights.py" />
-    <Compile Include="sharedMemoryAPI.py" />
     <Compile Include="wheel.py" />
   </ItemGroup>
   <ItemGroup>
@@ -41,12 +43,27 @@
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
       <Architecture>X64</Architecture>
     </Interpreter>
+    <Interpreter Include="env\">
+      <Id>env1</Id>
+      <Version>3.6</Version>
+      <Description>env (Python 3.6 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
   </ItemGroup>
   <ItemGroup>
     <Content Include="makeConfigurer.bat" />
     <Content Include="makeexe.bat" />
+    <Content Include="pyDirectInputKeySend\.git" />
     <Content Include="pyInstallerSetup.bat" />
+    <Content Include="pyRfactor2SharedMemory\.git" />
     <Content Include="requirements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="pyDirectInputKeySend\" />
+    <Folder Include="pyRfactor2SharedMemory\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

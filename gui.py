@@ -10,11 +10,11 @@ import tkinter.font as font
 
 from configIni import Config
 from wheel import Controller
-from directInputKeySend import KeycodeToDIK
+from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 15 # The git commit count
-versionStr = 'Headlight Controls Configurer V0.1.%d' % BUILD_REVISION
-versionDate = '2019-08-14'
+BUILD_REVISION = 17 # The git commit count
+versionStr = 'Headlight Controls Configurer V0.2.%d' % BUILD_REVISION
+versionDate = '2019-08-15'
 
 KEYBOARD = 'keyboard'
 
