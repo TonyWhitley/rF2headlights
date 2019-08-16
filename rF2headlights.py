@@ -12,11 +12,11 @@ from threading import Timer
 from configIni import Config
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
-from gui import run, KEYBOARD
+from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 17  # The git branch commit count
-versionStr = 'rF2headlights V0.2.%d' % BUILD_REVISION
-versionDate = '2019-08-15'
+BUILD_REVISION = 22  # The git branch commit count
+versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
+versionDate = '2019-08-16'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -61,12 +61,13 @@ def main():
     """ docstring """
     headlightFlash_o = HeadlightControl()
     config_o = Config()
-    pit_limiter = config_o.get('miscellaneous', 'pit_limiter')
-    pit_lane = config_o.get('miscellaneous', 'pit_lane')
+    pit_limiter = config_o.get('miscellaneous', 'pit_limiter') == '1'
+    pit_lane = config_o.get('miscellaneous', 'pit_lane') == '1'
     _o_run = run()
+    _o_run.controller_o.start_timer() # Start the 1 second timer
     while True:
         _cmd = _o_run.running()
-        print(_cmd)
+        #print(_cmd)
         if _cmd == 'Headlights off':
             headlightFlash_o.on()
         if _cmd == 'Headlights on':
@@ -75,14 +76,13 @@ def main():
             headlightFlash_o.four_flashes()
         if _cmd == 'Toggle headlights':
             headlightFlash_o.toggle()
+        if _cmd == TIMER_EVENT:
+            if pit_limiter:
+                headlightFlash_o.check_pit_limiter()
+            if pit_lane:
+                headlightFlash_o.check_pit_lane()
         if _cmd == 'QUIT':
             break
-        # _o_run.running() needs to return every second (say)
-        # so that we can monitor the pit lane/limiter state
-        if pit_limiter:
-            headlightFlash_o.pit_limiter_flashes()
-        if pit_lane:
-            headlightFlash_o.pit_lane_flashes()
 
 
 class HeadlightControl:
@@ -131,9 +131,19 @@ class HeadlightControl:
         """ Flash while the pit limiter is on """
         self.start_flashing(self.__pit_limiter_is_off)
 
+    def check_pit_limiter(self) -> None:
+        if self._info.isOnTrack():
+            if not self.__pit_limiter_is_off():
+                self.pit_limiter_flashes()
+
     def pit_lane_flashes(self) -> None:
         """ Flash while in the pit lane """
         self.start_flashing(self.__not_in_pit_lane)
+
+    def check_pit_lane(self) -> None:
+        if self._info.isOnTrack():
+            if not self.__not_in_pit_lane():
+                self.pit_lane_flashes()
 
     def on(self) -> None:
         """ Turn them on regardless """
@@ -201,7 +211,7 @@ class HeadlightControl:
         return not self._info.playersVehicleTelemetry().mSpeedLimiter
 
     def __ignition_is_on(self) -> bool:
-        """ Is it pn? """
+        """ Is it on? """
         return self._info.playersVehicleTelemetry().mIgnitionStarter
 
     def flashing(self) -> bool:

@@ -349,3 +349,5 @@ healthchecksdb
 /rF2headlights.spec
 /rF2headlights.exe
 /envSphinx
+/monkeytype
+/monkeytype.sqlite3

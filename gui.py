@@ -12,9 +12,9 @@ from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 17  # The git commit count
-versionStr = 'Headlight Controls Configurer V0.2.%d' % BUILD_REVISION
-versionDate = '2019-08-15'
+BUILD_REVISION = 22  # The git commit count
+versionStr = 'Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
+versionDate = '2019-08-16'
 
 KEYBOARD = 'keyboard'
 
@@ -58,6 +58,8 @@ rfactor_headlight_control = {
         'svControl': None,
     }
 }
+
+TIMER_EVENT = 'TIMER_EVENT'
 
 tk_event = None
 root = None
@@ -367,6 +369,8 @@ class Run:
             if self.pygame_event:
                 if self.pygame_event == 'QUIT':
                     return 'QUIT'
+                elif self.pygame_event == TIMER_EVENT:
+                    return TIMER_EVENT
                 try:
                     _button = str(self.pygame_event.button)
                     _joy = self.controller_o.controller_names[self.pygame_event.joy]
@@ -397,7 +401,7 @@ def run_main():
     _o_run = run()
     while True:
         _cmd = _o_run.running()
-        print(_cmd)
+        #print(_cmd)
         if _cmd == 'QUIT':
             break
 

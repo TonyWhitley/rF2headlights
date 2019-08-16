@@ -60,6 +60,10 @@ class Controller:
             _j.init()
             self.controller_names.append(self.get_name(_j))
 
+    def start_timer(self):
+        """ Start a one second timer to check for pit entry """
+        pygame.time.set_timer(pygame.USEREVENT+1, 1000) # Every second
+
     def select_controller(self, controller_name):
         """ docstring """
         self.controller = pygame.joystick.Joystick(0)  # fallback value
@@ -110,6 +114,8 @@ class Controller:
                 pass
             if event.type == pygame.KEYDOWN:
                 callback(event)
+            if event.type == pygame.USEREVENT+1:
+                callback('TIMER_EVENT')
         if tk_main_dialog:  # Tk is running as well
             try:
                 tk_main_dialog.update()
