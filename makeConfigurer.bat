@@ -14,6 +14,8 @@ pyinstaller ^
   --onefile ^
   --distpath . ^
   --name rF2headlightsConfigurer ^
+  --add-data resources\headlight.ico;. ^
+  --icon resources\headlight.ico ^
   "%~dp0\gui.py "
 pause
 

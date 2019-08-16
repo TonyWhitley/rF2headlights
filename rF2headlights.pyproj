@@ -40,10 +40,13 @@
     <Content Include="pyInstallerSetup.bat" />
     <Content Include="pyRfactor2SharedMemory\.git" />
     <Content Include="requirements.txt" />
+    <Content Include="resources\headlight.ico" />
+    <Content Include="resources\headlight.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />
+    <Folder Include="resources\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">

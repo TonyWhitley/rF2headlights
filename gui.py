@@ -4,16 +4,18 @@ Set values in headlightControls.ini to configure headlight controls
 # pylint: disable=invalid-name
 
 # Python 3
+from os import path
 import tkinter as tk
 from tkinter import ttk
 import tkinter.font as font
+import sys
 
 from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 22  # The git commit count
-versionStr = 'Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
+BUILD_REVISION = 23  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
 versionDate = '2019-08-16'
 
 KEYBOARD = 'keyboard'
@@ -64,6 +66,15 @@ TIMER_EVENT = 'TIMER_EVENT'
 tk_event = None
 root = None
 
+def icon(root):
+    if getattr( sys, 'frozen', False ) :
+        # running in a PyInstaller bundle (exe)
+        _p = path.join(sys._MEIPASS, 'headlight.ico')
+        root.iconbitmap(_p)
+    else :
+        # running live
+        root.iconbitmap('resources/headlight.ico')
+
 #########################
 # The tab's public class:
 #########################
@@ -86,6 +97,8 @@ class Tab:
         """ Put this into the parent frame """
         self.root = _root
         self.parentFrame = parentFrame
+        icon(self.root)
+
         self.root.bind('<KeyPress>', self.tk_event_callback)
 
         self.headlight_controls_frame_o = headlightControlsFrame(
@@ -331,6 +344,7 @@ class Run:
         """ Put this into the parent frame """
         self.root = _root
         self.parentFrame = parentFrame
+        icon(self.root)
         _keyboard_control = False
         for name in headlight_controls:
             if self.config_o.get(name, 'Controller') == KEYBOARD:

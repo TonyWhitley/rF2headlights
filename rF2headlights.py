@@ -14,7 +14,7 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 22  # The git branch commit count
+BUILD_REVISION = 23  # The git branch commit count
 versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
 versionDate = '2019-08-16'
 
@@ -23,7 +23,7 @@ program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
     "Original Python mapping implented by\n" \
     "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
-    "Icon made by https://www.flaticon.com/authors/those-icons"
+    "Icon made by https://www.flaticon.com/authors/freepik"
 
 
 #################################################################################

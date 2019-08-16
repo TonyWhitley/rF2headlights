@@ -13,6 +13,8 @@ rem             it's best to keep it for error messages
 pyinstaller ^
   --onefile ^
   --distpath . ^
+  --add-data resources\headlight.ico;. ^
+  --icon resources\headlight.ico ^
   "%~dp0\rF2headlights.py "
 pause
 
