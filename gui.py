@@ -12,52 +12,52 @@ from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 17 # The git commit count
+BUILD_REVISION = 17  # The git commit count
 versionStr = 'Headlight Controls Configurer V0.2.%d' % BUILD_REVISION
 versionDate = '2019-08-15'
 
 KEYBOARD = 'keyboard'
 
 headlight_controls = {
-    'Toggle headlights'   : {
-        'tkButton':None,
-        'tkLabel':None,
-        'ControllerName':None,
-        'svControllerName':None,
-        'svControl':None,
-        },
-    'Flash headlights'    : {
-        'tkButton':None,
-        'tkLabel':None,
-        'ControllerName':None,
-        'svControllerName':None,
-        'svControl':None,
-        },
-    'Headlights on'       : {
-        'tkButton':None,
-        'tkLabel':None,
-        'ControllerName':None,
-        'svControllerName':None,
-        'svControl':None,
-        },
-    'Headlights off'      : {
-        'tkButton':None,
-        'tkLabel':None,
-        'ControllerName':None,
-        'svControllerName':None,
-        'svControl':None,
-        }
+    'Toggle headlights': {
+        'tkButton': None,
+        'tkLabel': None,
+        'ControllerName': None,
+        'svControllerName': None,
+        'svControl': None,
+    },
+    'Flash headlights': {
+        'tkButton': None,
+        'tkLabel': None,
+        'ControllerName': None,
+        'svControllerName': None,
+        'svControl': None,
+    },
+    'Headlights on': {
+        'tkButton': None,
+        'tkLabel': None,
+        'ControllerName': None,
+        'svControllerName': None,
+        'svControl': None,
+    },
+    'Headlights off': {
+        'tkButton': None,
+        'tkLabel': None,
+        'ControllerName': None,
+        'svControllerName': None,
+        'svControl': None,
     }
+}
 
 rfactor_headlight_control = {
-    'rFactor Toggle' : {
-        'tkButton':None,
-        'tkLabel':None,
-        'ControllerName':None,
-        'svControllerName':None,
-        'svControl':None,
-        }
+    'rFactor Toggle': {
+        'tkButton': None,
+        'tkLabel': None,
+        'ControllerName': None,
+        'svControllerName': None,
+        'svControl': None,
     }
+}
 
 tk_event = None
 root = None
@@ -65,6 +65,8 @@ root = None
 #########################
 # The tab's public class:
 #########################
+
+
 class Tab:
     """ docstring """
     parentFrame = None
@@ -75,7 +77,7 @@ class Tab:
 
     def tk_event_callback(self, _event):    # pylint: disable=no-self-use
         """ docstring """
-        global tk_event # pylint: disable=global-statement
+        global tk_event  # pylint: disable=global-statement
         tk_event = _event
 
     def __init__(self, parentFrame, _root):
@@ -84,14 +86,16 @@ class Tab:
         self.parentFrame = parentFrame
         self.root.bind('<KeyPress>', self.tk_event_callback)
 
-        self.headlight_controls_frame_o = headlightControlsFrame(self.parentFrame)
+        self.headlight_controls_frame_o = headlightControlsFrame(
+            self.parentFrame)
         self.headlight_controls_frame_o.tkFrame_headlight_control.grid(column=0,
                                                                        row=2,
                                                                        sticky='new',
                                                                        padx=self.xyPadding,
                                                                        rowspan=2)
 
-        self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(self.parentFrame)
+        self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(
+            self.parentFrame)
         self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=1,
                                                                          row=2,
                                                                          sticky='new',
@@ -128,13 +132,14 @@ class Tab:
         """ Set the settings for this tab """
         pass    # pylint: disable=unnecessary-pass
 
+
 class ControlFrame(Tab):
     """ Generic frame with a list of controls """
     tkFrame_headlight_control = None
     pygame_event = None
 
     def __init__(self, parentFrame, _headlight_controls):   # pylint: disable=super-init-not-called
-        global root # pylint: disable=global-statement
+        global root  # pylint: disable=global-statement
 
         self.parentFrame = parentFrame
         self.headlight_controls = _headlight_controls
@@ -156,7 +161,7 @@ class ControlFrame(Tab):
             _control_line['tkButton'] = tk.Button(self.tkFrame_headlight_control,
                                                   text='Select ' + name,
                                                   width=20,
-                                                  command=lambda n=name,\
+                                                  command=lambda n=name,
                                                   w=super().controller_o:
                                                   self.set_control(n, w))
             _control_line['tkButton'].grid(row=_control_num+2,
@@ -164,7 +169,8 @@ class ControlFrame(Tab):
                                            pady=3)
             ##########################################################
             _control_line['svControllerName'] = tk.StringVar()
-            _control_line['svControllerName'].set(super().config_o.get(name, 'Controller'))
+            _control_line['svControllerName'].set(
+                super().config_o.get(name, 'Controller'))
             _control_line['ControllerName'] = \
                 tk.Label(self.tkFrame_headlight_control,
                          textvariable=control['svControllerName'],
@@ -178,7 +184,8 @@ class ControlFrame(Tab):
                                                  sticky='w')
             ##########################################################
             _control_line['svControl'] = tk.StringVar()
-            _control_line['svControl'].set(super().config_o.get(name, 'Control'))
+            _control_line['svControl'].set(
+                super().config_o.get(name, 'Control'))
             _control_line['tkLabel'] = tk.Label(self.tkFrame_headlight_control,
                                                 textvariable=control['svControl'],
                                                 fg='SystemInactiveCaptionText',
@@ -192,38 +199,44 @@ class ControlFrame(Tab):
 
     def pygame_callback(self, event):
         """ docstring """
-        #print(event)
+        # print(event)
         self.pygame_event = event
 
     def set_control(self, name, controller_o):
         """ Wait for user to press a control """
-        global tk_event # pylint: disable=global-statement
+        global tk_event  # pylint: disable=global-statement
         tk_event = None
         self.pygame_event = None
         while not tk_event and not self.pygame_event:
             # Run pygame and tk to get latest input
-            controller_o.pygame_tk_check(self.pygame_callback, self.parentFrame)
+            controller_o.pygame_tk_check(
+                self.pygame_callback, self.parentFrame)
         if tk_event:
             dik = KeycodeToDIK(tk_event.keycode)
             self.headlight_controls[name]['svControl'].set(dik)
             self.headlight_controls[name]['tkLabel'].configure(text=dik)
-            self.headlight_controls[name]['ControllerName'].configure(text=KEYBOARD)
+            self.headlight_controls[name]['ControllerName'].configure(
+                text=KEYBOARD)
             self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
             return tk_event.char
         if self.pygame_event:
             _button = self.pygame_event.button
-            _joy = controller_o.controllerNames[self.pygame_event.joy]
+            _joy = controller_o.controller_names[self.pygame_event.joy]
             self.headlight_controls[name]['svControl'].set(_button)
-            self.headlight_controls[name]['tkLabel'].configure(text=str(_button))
-            self.headlight_controls[name]['ControllerName'].configure(text=_joy)
+            self.headlight_controls[name]['tkLabel'].configure(
+                text=str(_button))
+            self.headlight_controls[name]['ControllerName'].configure(
+                text=_joy)
             self.headlight_controls[name]['svControllerName'].set(_joy)
             return _button
 
     def save(self):
         """ Save the Controller/Control pairs to the .ini file """
         for name, control in self.headlight_controls.items():
-            self.config_o.set(name, 'Controller', control['svControllerName'].get())
+            self.config_o.set(name, 'Controller',
+                              control['svControllerName'].get())
             self.config_o.set(name, 'Control', control['svControl'].get())
+
 
 class rFactorHeadlightControlFrame(ControlFrame):
     """
@@ -231,11 +244,12 @@ class rFactorHeadlightControlFrame(ControlFrame):
     Must be a keyboard key
     Also includes the pit limiter / pit lane flash options
     """
+
     def __init__(self, parentFrame):
         super().__init__(parentFrame, rfactor_headlight_control)
         ttk.Label(self.tkFrame_headlight_control,
                   text='Must be a keyboard key\n').\
-                      grid()
+            grid()
         ##########################################################
         _separator = ttk.Separator(self.tkFrame_headlight_control,
                                    orient="horizontal")
@@ -270,31 +284,32 @@ class rFactorHeadlightControlFrame(ControlFrame):
 
     def save(self):
         super().save()
-        self.config_o.set('miscellaneous', 'pit_limiter', str(self.pit_limiter.get()))
-        self.config_o.set('miscellaneous', 'pit_lane', str(self.pit_lane.get()))
+        self.config_o.set('miscellaneous', 'pit_limiter',
+                          str(self.pit_limiter.get()))
+        self.config_o.set('miscellaneous', 'pit_lane',
+                          str(self.pit_lane.get()))
+
 
 class headlightControlsFrame(ControlFrame):
     """
     Frame for specifying the controls used by this program to select
     flashing the headlights etc.
     """
+
     def __init__(self, parentFrame):
         super().__init__(parentFrame, headlight_controls)
+
 
 def main():
     """ docstring """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
-    tabConfigureFlash = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
+    tabConfigureFlash = ttk.Frame(
+        root, width=1200, height=1200, relief='sunken', borderwidth=5)
     tabConfigureFlash.grid()
 
     __o_tab = Tab(tabConfigureFlash, _root)
-    #root.mainloop()
-
-
-
-
-
+    # root.mainloop()
 
 
 class Run:
@@ -305,9 +320,9 @@ class Run:
     xyPadding = 10
     pygame_event = None
 
-    def tk_event_callback(self, _event): # pylint: disable=no-self-use
+    def tk_event_callback(self, _event):  # pylint: disable=no-self-use
         """ docstring """
-        global tk_event # pylint: disable=global-statement
+        global tk_event  # pylint: disable=global-statement
         tk_event = _event
 
     def __init__(self, parentFrame, _root):
@@ -321,22 +336,23 @@ class Run:
                 break
         tk.Label(self.parentFrame,
                  text="This window is only needed to capture keyboard input").\
-        grid(row=0, column=0)
+            grid(row=0, column=0)
         if _keyboard_control:
             root.bind('<KeyPress>', self.tk_event_callback)
-        else:   #minimise the windown
+        else:  # minimise the windown
             self.root.wm_state('iconic')
+
     def pygame_callback(self, event):
         """ docstring """
-        #print(event)
+        # print(event)
         self.pygame_event = event
 
     def running(self):
         """ docstring """
-        global tk_event # pylint: disable=global-statement
+        global tk_event  # pylint: disable=global-statement
         tk_event = None
         self.pygame_event = None
-        while True: # pylint: disable=too-many-nested-blocks
+        while True:  # pylint: disable=too-many-nested-blocks
             while not tk_event and not self.pygame_event:
                 # Run pygame and tk to get latest input
                 self.controller_o.pygame_tk_check(self.pygame_callback,
@@ -353,25 +369,28 @@ class Run:
                     return 'QUIT'
                 try:
                     _button = str(self.pygame_event.button)
-                    _joy = self.controller_o.controllerNames[self.pygame_event.joy]
+                    _joy = self.controller_o.controller_names[self.pygame_event.joy]
                     #print(_joy, _button)
                     for cmd in headlight_controls:
                         if self.config_o.get(cmd, 'Controller') == _joy:
                             if _button == self.config_o.get(cmd, 'Control'):
                                 return cmd
-                except: # pylint: disable=bare-except
-                    #not a joystick button
+                except:  # pylint: disable=bare-except
+                    # not a joystick button
                     pass
                 self.pygame_event = None
+
 
 def run():
     """ docstring """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
-    runWindow = ttk.Frame(root, width=200, height=200, relief='sunken', borderwidth=5)
+    runWindow = ttk.Frame(root, width=200, height=200,
+                          relief='sunken', borderwidth=5)
     runWindow.grid()
     _o_run = Run(runWindow, _root)
     return _o_run
+
 
 def run_main():
     """ docstring """
@@ -382,8 +401,9 @@ def run_main():
         if _cmd == 'QUIT':
             break
 
+
 if __name__ == '__main__':
     # To run this tab by itself
     main()
     # for development:
-    #run_main()
+    # run_main()

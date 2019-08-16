@@ -14,16 +14,16 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD
 
-BUILD_REVISION = 17 # The git branch commit count
+BUILD_REVISION = 17  # The git branch commit count
 versionStr = 'rF2headlights V0.2.%d' % BUILD_REVISION
 versionDate = '2019-08-15'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
- "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
- "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
- "Original Python mapping implented by\n" \
- "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
- "Icon made by https://www.flaticon.com/authors/those-icons"
+    "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
+    "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
+    "Original Python mapping implented by\n" \
+    "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
+    "Icon made by https://www.flaticon.com/authors/those-icons"
 
 
 #################################################################################
@@ -33,24 +33,29 @@ def SetTimer(mS, callback, _args=None) -> Timer:
         timer = Timer(mS / 1000, callback, args=_args)
         timer.start()
     else:
-        pass # TBD delete timer?
+        pass  # TBD delete timer?
     return timer
+
 
 def StopTimer(timer) -> None:
     """ docstring """
     timer.cancel()
+
 
 def msgBox(string: str) -> None:
     """ docstring """
     print(string)
 
 #################################################################################
+
+
 def quit_program(errorCode: int) -> None:
     """ User presses a key before exiting program """
     print('\n\nPress Enter to exit')
     input()
     sys.exit(errorCode)
 #################################################################################
+
 
 def main():
     """ docstring """
@@ -97,8 +102,9 @@ class HeadlightControl:
         config_o = Config()
         if config_o.get('rFactor Toggle', 'controller') == KEYBOARD:
             self.headlightToggleDIK = config_o.get('rFactor Toggle', 'control')
-            if self.headlightToggleDIK not in DirectInputKeyCodeTable: # (it must be)
-                print('\nheadlight toggle button "%s" not recognised.\n'\
+            # (it must be)
+            if self.headlightToggleDIK not in DirectInputKeyCodeTable:
+                print('\nheadlight toggle button "%s" not recognised.\n'
                       'It must be one of:' %
                       self.headlightToggleDIK)
                 for _keyCode in DirectInputKeyCodeTable:
@@ -108,7 +114,6 @@ class HeadlightControl:
             print('\nHeadlight toggle control must be a key.\n')
             quit_program(99)
 
-
     def count_down(self) -> bool:
         """
         Stopping callback function
@@ -116,9 +121,10 @@ class HeadlightControl:
         """
         self._count -= 1
         return self._count <= 0
+
     def four_flashes(self) -> None:
         """ Flash four times (e.g. for overtaking) """
-        self._count = 8 # 4 flashes
+        self._count = 8  # 4 flashes
         self.start_flashing(self.count_down)
 
     def pit_limiter_flashes(self) -> None:
@@ -145,7 +151,6 @@ class HeadlightControl:
         for the headlight control is needed.
         """
         PressReleaseKey(self.headlightToggleDIK)
-
 
     def start_flashing(self, stopping_callback) -> None:
         """ Start flashing (if not already) """
@@ -186,18 +191,23 @@ class HeadlightControl:
     def are_headlights_on(self) -> bool:
         """ Are they on? """
         return self._info.playersVehicleTelemetry().mHeadlights
+
     def __not_in_pit_lane(self) -> bool:
         """ Used to stop when not in the pit lane """
         return not self._info.playersVehicleScoring().mInPits
+
     def __pit_limiter_is_off(self) -> bool:
         """ Used to stop when the pit limiter is off """
         return not self._info.playersVehicleTelemetry().mSpeedLimiter
+
     def __ignition_is_on(self) -> bool:
         """ Is it pn? """
         return self._info.playersVehicleTelemetry().mIgnitionStarter
+
     def flashing(self) -> bool:
         """ Are the headlights being flashed? """
         return self._flashing
+
 
 if __name__ == "__main__":
     main()
