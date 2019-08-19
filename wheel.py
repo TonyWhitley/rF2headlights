@@ -60,8 +60,11 @@ class Controller:
             _j.init()
             self.controller_names.append(self.get_name(_j))
 
-    def start_timer(self):
-        """ Start a one second timer to check for pit entry """
+    def start_pit_check_timer(self):
+        """
+        Start a one second timer to check for pit entry and / or
+        pit limiter being turned on
+        """
         pygame.time.set_timer(pygame.USEREVENT+1, 1000) # Every second
 
     def select_controller(self, controller_name):

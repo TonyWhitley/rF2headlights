@@ -14,14 +14,14 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 25  # The git branch commit count
+BUILD_REVISION = 27  # The git branch commit count
 versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
 versionDate = '2019-08-19'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
     "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
-    "Original Python mapping implented by\n" \
+    "Original Python mapping implemented by\n" \
     "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
     "Icon made by https://www.flaticon.com/authors/freepik"
 
@@ -69,7 +69,7 @@ def main():
     # pylint: enable=C0326
 
     _o_run = run()
-    _o_run.controller_o.start_timer() # Start the 1 second timer
+    _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
     while True:
         _cmd = _o_run.running()
         #print(_cmd)
@@ -101,6 +101,11 @@ class HeadlightControl:
     _count = 0
     timer = None
     _info = sharedMemoryAPI.SimInfoAPI()
+    if _info.isRF2running():
+        print('rFactor2 is running')
+    else:
+        print('\nrFactor2 is not running\n')
+        quit_program(98)
     print(_info.versionCheckMsg)
 
     def __init__(self) -> None:
