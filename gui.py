@@ -14,9 +14,9 @@ from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 23  # The git commit count
+BUILD_REVISION = 24  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
-versionDate = '2019-08-16'
+versionDate = '2019-08-19'
 
 KEYBOARD = 'keyboard'
 
@@ -92,6 +92,8 @@ class Tab:
         """ docstring """
         global tk_event  # pylint: disable=global-statement
         tk_event = _event
+        if tk_event == 'QUIT':
+            sys.exit(0)
 
     def __init__(self, parentFrame, _root):
         """ Put this into the parent frame """
@@ -153,13 +155,16 @@ class ControlFrame(Tab):
     tkFrame_headlight_control = None
     pygame_event = None
 
-    def __init__(self, parentFrame, _headlight_controls):   # pylint: disable=super-init-not-called
+    def __init__(self, 
+                 parentFrame,
+                 name,
+                 _headlight_controls):   # pylint: disable=super-init-not-called
         global root  # pylint: disable=global-statement
 
         self.parentFrame = parentFrame
         self.headlight_controls = _headlight_controls
         self.tkFrame_headlight_control = tk.LabelFrame(parentFrame,
-                                                       text='rFactor Headlight Control',
+                                                       text=name,
                                                        padx=self.xyPadding,
                                                        pady=self.xyPadding)
 
@@ -196,7 +201,7 @@ class ControlFrame(Tab):
                          padx=4)
             _control_line['ControllerName'].grid(row=_control_num+2,
                                                  column=1,
-                                                 sticky='w')
+                                                 sticky='e')
             ##########################################################
             _control_line['svControl'] = tk.StringVar()
             _control_line['svControl'].set(
@@ -235,15 +240,16 @@ class ControlFrame(Tab):
             self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
             return tk_event.char
         if self.pygame_event:
-            _button = self.pygame_event.button
-            _joy = controller_o.controller_names[self.pygame_event.joy]
-            self.headlight_controls[name]['svControl'].set(_button)
-            self.headlight_controls[name]['tkLabel'].configure(
-                text=str(_button))
-            self.headlight_controls[name]['ControllerName'].configure(
-                text=_joy)
-            self.headlight_controls[name]['svControllerName'].set(_joy)
-            return _button
+            if type(self.pygame_event) is not str:
+                _button = self.pygame_event.button
+                _joy = controller_o.controller_names[self.pygame_event.joy]
+                self.headlight_controls[name]['svControl'].set(_button)
+                self.headlight_controls[name]['tkLabel'].configure(
+                    text=str(_button))
+                self.headlight_controls[name]['ControllerName'].configure(
+                    text=_joy)
+                self.headlight_controls[name]['svControllerName'].set(_joy)
+                return _button
 
     def save(self):
         """ Save the Controller/Control pairs to the .ini file """
@@ -261,7 +267,9 @@ class rFactorHeadlightControlFrame(ControlFrame):
     """
 
     def __init__(self, parentFrame):
-        super().__init__(parentFrame, rfactor_headlight_control)
+        super().__init__(parentFrame,
+                         'rFactor Headlight Control',
+                         rfactor_headlight_control)
         ttk.Label(self.tkFrame_headlight_control,
                   text='Must be a keyboard key\n').\
             grid()
@@ -297,12 +305,56 @@ class rFactorHeadlightControlFrame(ControlFrame):
             x = 0
         self.pit_lane.set(x)
 
+        ##########################################################
+        tkLabel_flash_duration = tk.Label(self.tkFrame_headlight_control,
+                                          text='Overtake flash duration')
+        tkLabel_flash_duration.grid(sticky='se',
+                                    column=0,
+                                    row=7)
+        self.tkSlider_flash_duration = tk.Scale(self.tkFrame_headlight_control,
+                                         from_=10,
+                                         to=500,
+                                         resolution=10,
+                                         orient=tk.HORIZONTAL)
+
+        self.tkSlider_flash_duration.grid(sticky='w',
+                                   column=1,
+                                   row=7)
+        x = self.config_o.get('miscellaneous', 'flash_duration')
+        if not x:
+            x = 10
+        self.tkSlider_flash_duration.set(x)
+        
+        ##########################################################
+        tkLabel_pit_flash_duration = tk.Label(self.tkFrame_headlight_control,
+                                          text='Pit flash duration')
+        tkLabel_pit_flash_duration.grid(sticky='se',
+                                    column=0,
+                                    row=8)
+        self.tkSlider_pit_flash_duration = tk.Scale(self.tkFrame_headlight_control,
+                                         from_=10,
+                                         to=500,
+                                         resolution=10,
+                                         orient=tk.HORIZONTAL)
+
+        self.tkSlider_pit_flash_duration.grid(sticky='w',
+                                   column=1,
+                                   row=8)
+        x = self.config_o.get('miscellaneous', 'pit_flash_duration')
+        if not x:
+            x = 10
+        self.tkSlider_pit_flash_duration.set(x)
+        
     def save(self):
         super().save()
         self.config_o.set('miscellaneous', 'pit_limiter',
                           str(self.pit_limiter.get()))
         self.config_o.set('miscellaneous', 'pit_lane',
                           str(self.pit_lane.get()))
+        self.config_o.set('miscellaneous', 'flash_duration',
+                          str(self.tkSlider_flash_duration.get()))
+        self.config_o.set('miscellaneous', 'pit_flash_duration',
+                          str(self.tkSlider_pit_flash_duration.get()))
 
 
 class headlightControlsFrame(ControlFrame):
@@ -312,7 +364,9 @@ class headlightControlsFrame(ControlFrame):
     """
 
     def __init__(self, parentFrame):
-        super().__init__(parentFrame, headlight_controls)
+        super().__init__(parentFrame,
+                         'Player Headlight Controls',
+                         headlight_controls)
 
 
 def main():
@@ -374,6 +428,8 @@ class Run:
                 self.controller_o.pygame_tk_check(self.pygame_callback,
                                                   self.parentFrame)
             if tk_event:
+                if tk_event == 'QUIT':
+                    return 'QUIT'
                 dik = KeycodeToDIK(tk_event.keycode)
                 for cmd in headlight_controls:
                     if self.config_o.get(cmd, 'Controller') == KEYBOARD:

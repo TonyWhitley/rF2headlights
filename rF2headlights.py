@@ -14,9 +14,9 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 23  # The git branch commit count
+BUILD_REVISION = 24  # The git branch commit count
 versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
-versionDate = '2019-08-16'
+versionDate = '2019-08-19'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -61,8 +61,11 @@ def main():
     """ docstring """
     headlightFlash_o = HeadlightControl()
     config_o = Config()
-    pit_limiter = config_o.get('miscellaneous', 'pit_limiter') == '1'
-    pit_lane = config_o.get('miscellaneous', 'pit_lane') == '1'
+    pit_limiter =           config_o.get('miscellaneous', 'pit_limiter') == '1'
+    pit_lane =              config_o.get('miscellaneous', 'pit_lane') == '1'
+    flash_duration =    int(config_o.get('miscellaneous', 'flash_duration'))
+    pit_flash_duration =int(config_o.get('miscellaneous', 'pit_flash_duration'))
+
     _o_run = run()
     _o_run.controller_o.start_timer() # Start the 1 second timer
     while True:
@@ -73,14 +76,14 @@ def main():
         if _cmd == 'Headlights on':
             headlightFlash_o.off()
         if _cmd == 'Flash headlights':
-            headlightFlash_o.four_flashes()
+            headlightFlash_o.four_flashes(flash_duration)
         if _cmd == 'Toggle headlights':
             headlightFlash_o.toggle()
         if _cmd == TIMER_EVENT:
             if pit_limiter:
-                headlightFlash_o.check_pit_limiter()
+                headlightFlash_o.check_pit_limiter(pit_flash_duration)
             if pit_lane:
-                headlightFlash_o.check_pit_lane()
+                headlightFlash_o.check_pit_lane(pit_flash_duration)
         if _cmd == 'QUIT':
             break
 
@@ -122,28 +125,33 @@ class HeadlightControl:
         self._count -= 1
         return self._count <= 0
 
-    def four_flashes(self) -> None:
+    def four_flashes(self, pit_flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
         self._count = 8  # 4 flashes
-        self.start_flashing(self.count_down)
+        self.timer = flash_duration
+        self.start_flashing(self.count_down, flash_duration)
 
-    def pit_limiter_flashes(self) -> None:
+    def pit_limiter_flashes(self, pit_flash_duration) -> None:
         """ Flash while the pit limiter is on """
+        self.timer = pit_flash_duration
         self.start_flashing(self.__pit_limiter_is_off)
 
-    def check_pit_limiter(self) -> None:
+    def check_pit_limiter(self, pit_flash_duration) -> None:
+        """ Is the pit limiter on? """
         if self._info.isOnTrack():
             if not self.__pit_limiter_is_off():
-                self.pit_limiter_flashes()
+                self.pit_limiter_flashes(pit_flash_duration)
 
-    def pit_lane_flashes(self) -> None:
+    def pit_lane_flashes(self, pit_flash_duration) -> None:
         """ Flash while in the pit lane """
+        self.timer = pit_flash_duration
         self.start_flashing(self.__not_in_pit_lane)
 
-    def check_pit_lane(self) -> None:
+    def check_pit_lane(self, pit_flash_duration) -> None:
+        """ Has the car entered the pit lane? """
         if self._info.isOnTrack():
             if not self.__not_in_pit_lane():
-                self.pit_lane_flashes()
+                self.pit_lane_flashes(pit_flash_duration)
 
     def on(self) -> None:
         """ Turn them on regardless """
@@ -177,7 +185,7 @@ class HeadlightControl:
                         if not stopping_callback():
                             self._flashing = True
                             self.toggle()
-                            __flashTimer = SetTimer(20,
+                            __flashTimer = SetTimer(self.timer,
                                                     self.__toggle,
                                                     _args=[stopping_callback])
                             # type: ignore

@@ -34,6 +34,7 @@
     <Compile Include="wheel.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Documentation\Configurer.JPG" />
     <Content Include="makeConfigurer.bat" />
     <Content Include="makeexe.bat" />
     <Content Include="pyDirectInputKeySend\.git" />
@@ -44,6 +45,7 @@
     <Content Include="resources\headlight.png" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Documentation\" />
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="resources\" />

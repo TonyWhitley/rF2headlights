@@ -11,8 +11,10 @@ SECTIONS = [
     'rFactor Toggle',
 ]
 MISC_VALUES = {
-    'pit_limiter': '1',  # 1: flash headlights when pit limiter on
-    'pit_lane': '1',     # 1: flash headlights when in pit lane
+    'pit_limiter': '1',         # 1: flash headlights when pit limiter on
+    'pit_lane': '1',            # 1: flash headlights when in pit lane
+    'flash_duration': '20',     # Overtake flash duration
+    'pit_flash_duration': '20', # Pit lane flash duration
 }
 
 
@@ -26,6 +28,8 @@ class Config:
         for _section in SECTIONS:
             self.set(_section, 'Controller', 'Not yet selected')
             self.set(_section, 'Control', '0')
+        self.set('rFactor Toggle', 'Controller', 'keyboard')
+        self.set('rFactor Toggle', 'Control', 'DIK_H')
         for _val, default in MISC_VALUES.items():
             self.set('miscellaneous', _val, default)
 
