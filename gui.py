@@ -66,14 +66,15 @@ TIMER_EVENT = 'TIMER_EVENT'
 tk_event = None
 root = None
 
-def icon(root):
-    if getattr( sys, 'frozen', False ) :
+def icon(_root):
+    """ Use our icon """
+    if getattr(sys, 'frozen', False):
         # running in a PyInstaller bundle (exe)
         _p = path.join(sys._MEIPASS, 'headlight.ico')
-        root.iconbitmap(_p)
-    else :
+        _root.iconbitmap(_p)
+    else:
         # running live
-        root.iconbitmap('resources/headlight.ico')
+        _root.iconbitmap('resources/headlight.ico')
 
 #########################
 # The tab's public class:
@@ -155,16 +156,16 @@ class ControlFrame(Tab):
     tkFrame_headlight_control = None
     pygame_event = None
 
-    def __init__(self, 
+    def __init__(self,
                  parentFrame,
-                 name,
+                 frame_name,
                  _headlight_controls):   # pylint: disable=super-init-not-called
         global root  # pylint: disable=global-statement
 
         self.parentFrame = parentFrame
         self.headlight_controls = _headlight_controls
         self.tkFrame_headlight_control = tk.LabelFrame(parentFrame,
-                                                       text=name,
+                                                       text=frame_name,
                                                        padx=self.xyPadding,
                                                        pady=self.xyPadding)
 
@@ -312,39 +313,39 @@ class rFactorHeadlightControlFrame(ControlFrame):
                                     column=0,
                                     row=7)
         self.tkSlider_flash_duration = tk.Scale(self.tkFrame_headlight_control,
-                                         from_=10,
-                                         to=500,
-                                         resolution=10,
-                                         orient=tk.HORIZONTAL)
+                                                from_=10,
+                                                to=500,
+                                                resolution=10,
+                                                orient=tk.HORIZONTAL)
 
         self.tkSlider_flash_duration.grid(sticky='w',
-                                   column=1,
-                                   row=7)
+                                          column=1,
+                                          row=7)
         x = self.config_o.get('miscellaneous', 'flash_duration')
         if not x:
             x = 10
         self.tkSlider_flash_duration.set(x)
-        
+
         ##########################################################
         tkLabel_pit_flash_duration = tk.Label(self.tkFrame_headlight_control,
-                                          text='Pit flash duration')
+                                              text='Pit flash duration')
         tkLabel_pit_flash_duration.grid(sticky='se',
-                                    column=0,
-                                    row=8)
+                                        column=0,
+                                        row=8)
         self.tkSlider_pit_flash_duration = tk.Scale(self.tkFrame_headlight_control,
-                                         from_=10,
-                                         to=500,
-                                         resolution=10,
-                                         orient=tk.HORIZONTAL)
+                                                    from_=10,
+                                                    to=500,
+                                                    resolution=10,
+                                                    orient=tk.HORIZONTAL)
 
         self.tkSlider_pit_flash_duration.grid(sticky='w',
-                                   column=1,
-                                   row=8)
+                                              column=1,
+                                              row=8)
         x = self.config_o.get('miscellaneous', 'pit_flash_duration')
         if not x:
             x = 10
         self.tkSlider_pit_flash_duration.set(x)
-        
+
     def save(self):
         super().save()
         self.config_o.set('miscellaneous', 'pit_limiter',
@@ -439,7 +440,7 @@ class Run:
             if self.pygame_event:
                 if self.pygame_event == 'QUIT':
                     return 'QUIT'
-                elif self.pygame_event == TIMER_EVENT:
+                if self.pygame_event == TIMER_EVENT:
                     return TIMER_EVENT
                 try:
                     _button = str(self.pygame_event.button)

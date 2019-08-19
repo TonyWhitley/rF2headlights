@@ -61,10 +61,12 @@ def main():
     """ docstring """
     headlightFlash_o = HeadlightControl()
     config_o = Config()
+    # pylint: disable=C0326
     pit_limiter =           config_o.get('miscellaneous', 'pit_limiter') == '1'
     pit_lane =              config_o.get('miscellaneous', 'pit_lane') == '1'
     flash_duration =    int(config_o.get('miscellaneous', 'flash_duration'))
     pit_flash_duration =int(config_o.get('miscellaneous', 'pit_flash_duration'))
+    # pylint: enable=C0326
 
     _o_run = run()
     _o_run.controller_o.start_timer() # Start the 1 second timer
@@ -97,6 +99,7 @@ class HeadlightControl:
     headlightToggleDIK = None
     _flashing = False
     _count = 0
+    timer = None
     _info = sharedMemoryAPI.SimInfoAPI()
     print(_info.versionCheckMsg)
 
