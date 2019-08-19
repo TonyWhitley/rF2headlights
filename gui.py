@@ -14,7 +14,7 @@ from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 
-BUILD_REVISION = 24  # The git commit count
+BUILD_REVISION = 25  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
 versionDate = '2019-08-19'
 

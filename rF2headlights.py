@@ -14,7 +14,7 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 24  # The git branch commit count
+BUILD_REVISION = 25  # The git branch commit count
 versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
 versionDate = '2019-08-19'
 
@@ -125,11 +125,11 @@ class HeadlightControl:
         self._count -= 1
         return self._count <= 0
 
-    def four_flashes(self, pit_flash_duration) -> None:
+    def four_flashes(self, flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
         self._count = 8  # 4 flashes
         self.timer = flash_duration
-        self.start_flashing(self.count_down, flash_duration)
+        self.start_flashing(self.count_down)
 
     def pit_limiter_flashes(self, pit_flash_duration) -> None:
         """ Flash while the pit limiter is on """
