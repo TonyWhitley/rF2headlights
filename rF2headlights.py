@@ -12,7 +12,7 @@ from threading import Timer
 from configIni import Config
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
-from gui import run, KEYBOARD, TIMER_EVENT
+from gui import run, run_main, main as gui_main, KEYBOARD, TIMER_EVENT
 
 BUILD_REVISION = 29  # The git branch commit count
 versionStr = 'rF2headlights V0.4.%d' % BUILD_REVISION
@@ -70,6 +70,7 @@ def main():
     on_automatically =  int(config_o.get('miscellaneous', 'on_automatically'))
     # pylint: enable=C0326
 
+    gui_main()
     _player_is_driving = False
     _o_run = run()
     _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
@@ -235,7 +236,7 @@ class HeadlightControl:
 
     def __toggle(self, stopping_callback) -> None:
         """ Toggle the headlights unless it's time to stop """
-        if self._info.isRF2running():
+        if self._info.isSharedMemoryAvailable():
             if self._info.isTrackLoaded():
                 if self._info.isOnTrack():
                     if self.__ignition_is_on():

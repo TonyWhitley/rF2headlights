@@ -13,10 +13,11 @@ import sys
 from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
+import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 
-BUILD_REVISION = 25  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls Configurer V0.3.%d' % BUILD_REVISION
-versionDate = '2019-08-19'
+BUILD_REVISION = 29  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
+versionDate = '2019-08-20'
 
 KEYBOARD = 'keyboard'
 
@@ -120,6 +121,16 @@ class Tab:
                                                                          padx=self.xyPadding,
                                                                          rowspan=2)
 
+        self.rFactorStatusFrame_o = rFactorStatusFrame(
+            self.parentFrame)
+        """
+        self.rFactorStatusFrame_o.grid(column=1,
+                                                                         row=2,
+                                                                         sticky='new',
+                                                                         padx=self.xyPadding,
+                                                                         rowspan=2)
+        """
+
         #############################
         buttonFont = font.Font(weight='bold', size=10)
 
@@ -134,7 +145,7 @@ class Tab:
         self.tkButtonSave.grid(column=1, row=4, pady=25)
         #############################
 
-        self.controller_o.run(self.tk_event_callback, parentFrame)
+        #self.controller_o.run(self.tk_event_callback, parentFrame)
 
     def save(self):
         """ docstring """
@@ -284,7 +295,7 @@ class rFactorHeadlightControlFrame(ControlFrame):
         self.pit_limiter = tk.IntVar()
         tkCheckbutton_pitLimiter = tk.Checkbutton(self.tkFrame_headlight_control,
                                                   var=self.pit_limiter,
-                                                  text='Flash when pit limiter')
+                                                  text='Flash when pit limiter on')
 
         tkCheckbutton_pitLimiter.grid(sticky='w',
                                       columnspan=2)
@@ -307,11 +318,25 @@ class rFactorHeadlightControlFrame(ControlFrame):
         self.pit_lane.set(x)
 
         ##########################################################
+        self.default_to_on = tk.IntVar()
+        tkCheckbutton_pitLane = tk.Checkbutton(self.tkFrame_headlight_control,
+                                               var=self.default_to_on,
+                                               text='Headlights on at start')
+
+        tkCheckbutton_pitLane.grid(sticky='w',
+                                   columnspan=2)
+        x = self.config_o.get('miscellaneous', 'default_to_on')
+        if not x:
+            x = 0
+        self.pit_lane.set(x)
+
+        ##########################################################
+        _row = 9
         tkLabel_flash_duration = tk.Label(self.tkFrame_headlight_control,
                                           text='Overtake flash duration')
         tkLabel_flash_duration.grid(sticky='se',
                                     column=0,
-                                    row=7)
+                                    row=_row)
         self.tkSlider_flash_duration = tk.Scale(self.tkFrame_headlight_control,
                                                 from_=10,
                                                 to=500,
@@ -320,18 +345,19 @@ class rFactorHeadlightControlFrame(ControlFrame):
 
         self.tkSlider_flash_duration.grid(sticky='w',
                                           column=1,
-                                          row=7)
+                                          row=_row)
         x = self.config_o.get('miscellaneous', 'flash_duration')
         if not x:
             x = 10
         self.tkSlider_flash_duration.set(x)
 
         ##########################################################
+        _row += 1
         tkLabel_pit_flash_duration = tk.Label(self.tkFrame_headlight_control,
                                               text='Pit flash duration')
         tkLabel_pit_flash_duration.grid(sticky='se',
                                         column=0,
-                                        row=8)
+                                        row=_row)
         self.tkSlider_pit_flash_duration = tk.Scale(self.tkFrame_headlight_control,
                                                     from_=10,
                                                     to=500,
@@ -340,11 +366,58 @@ class rFactorHeadlightControlFrame(ControlFrame):
 
         self.tkSlider_pit_flash_duration.grid(sticky='w',
                                               column=1,
-                                              row=8)
+                                              row=_row)
         x = self.config_o.get('miscellaneous', 'pit_flash_duration')
         if not x:
             x = 10
         self.tkSlider_pit_flash_duration.set(x)
+
+        ##########################################################
+        _row += 2
+        self.vars = {}
+        _name = 'Automatic headlights'
+        self.vars[_name] = tk.StringVar(name=_name)
+        #self.vars[_name].set('Fred')
+
+        tkLabel_on_automatically = tk.Label(self.tkFrame_headlight_control,
+                                              text='Automatic headlights')
+        tkLabel_on_automatically.grid(sticky='se',
+                                        column=0,
+                                        row=_row)
+        self.tkSlider_on_automatically = tk.Scale(self.tkFrame_headlight_control,
+                                                  command=self._on_automatically_val,
+                                                  showvalue=0,
+                                                  from_=0,
+                                                  to=4,
+                                                  resolution=1,
+                                                  orient=tk.HORIZONTAL)
+
+        self.tkSlider_on_automatically.grid(sticky='w',
+                                            column=1,
+                                            row=_row)
+        x = self.config_o.get('miscellaneous', 'on_automatically')
+        if not x:
+            x = 10
+        self.tkSlider_on_automatically.set(x)
+        self._on_automatically_val(x)
+        
+        tkLabel_on_automatically_val = tk.Label(self.tkFrame_headlight_control,
+                                              textvariable=self.vars['Automatic headlights'])
+        _row += 1
+        tkLabel_on_automatically_val.grid(sticky='se',
+                                        column=0,
+                                        columnspan=2,
+                                        row=_row)
+        
+    def _on_automatically_val(self, event):
+        _strings = [
+            'Driver turns them on',
+            'At least one other driver has them on',
+            'More than one other driver has them on',
+            'At least half of the other drivers have them on',
+            'All the other drivers have them on'
+            ]
+        self.vars['Automatic headlights'].set(_strings[int(event)])
 
     def save(self):
         super().save()
@@ -352,10 +425,114 @@ class rFactorHeadlightControlFrame(ControlFrame):
                           str(self.pit_limiter.get()))
         self.config_o.set('miscellaneous', 'pit_lane',
                           str(self.pit_lane.get()))
+        self.config_o.set('miscellaneous', 'default_to_on',
+                          str(self.default_to_on.get()))
         self.config_o.set('miscellaneous', 'flash_duration',
                           str(self.tkSlider_flash_duration.get()))
         self.config_o.set('miscellaneous', 'pit_flash_duration',
                           str(self.tkSlider_pit_flash_duration.get()))
+        self.config_o.set('miscellaneous', 'on_automatically',
+                          str(self.tkSlider_on_automatically.get()))
+
+class rFactorStatusFrame(ControlFrame):
+    """
+    Frame for selecting the control that operates the headlight toggle
+    Must be a keyboard key
+    Also includes the pit limiter / pit lane flash options
+    """
+
+    def __init__(self, parentFrame):
+        ####################################################
+        # Status frame
+        super().__init__(parentFrame,
+                         'rFactor Status',
+                         {})
+        self.parentFrame = parentFrame
+        self.vars = {}
+        self._tkCheckbuttons = {}
+        self._timestamp = 0
+        self.xPadding = 10
+        tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
+        tkFrame_Status.grid(column=2, row=2, sticky='nsew', padx=self.xPadding)
+
+        self._createBoolVar('rF2 running', False)
+        self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='rF2 running',
+                                                        justify='l',
+                                                        #indicatoron=0,
+                                                        variable=self.vars['rF2 running'])
+        self._tkCheckbuttons['rF2 running'].grid(sticky='w')
+
+        self._createBoolVar('Shared memory working', False)
+        self._tkCheckbuttons['Shared memory working'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='Shared memory working',
+                                                        justify='l',
+                                                        #indicatoron=0,
+                                                        variable=self.vars['Shared memory working'])
+        self._tkCheckbuttons['Shared memory working'].grid(sticky='w')
+
+        self._createBoolVar('Track loaded', False)
+        self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='Track loaded',
+                                                        variable=self.vars['Track loaded'])
+        self._tkCheckbuttons['Track loaded'].grid(sticky='w')
+
+        self._createBoolVar('On track', False)
+        self._tkCheckbuttons['On track'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='On track',
+                                                        variable=self.vars['On track'])
+        self._tkCheckbuttons['On track'].grid(sticky='w')
+
+        self._createBoolVar('Escape pressed', False)
+        self._tkCheckbuttons['Escape pressed'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='Escape pressed',
+                                                        variable=self.vars['Escape pressed'])
+        self._tkCheckbuttons['Escape pressed'].grid(sticky='w')
+
+        self._createBoolVar('AI driving', False)
+        self._tkCheckbuttons['AI driving'] = tk.Checkbutton(tkFrame_Status, 
+                                                        text='AI driving',
+                                                        variable=self.vars['AI driving'])
+        self._tkCheckbuttons['AI driving'].grid(sticky='w')
+
+        self._createVar('Player', False)
+        self.driverLabel = tk.Label(tkFrame_Status,
+                                text='')
+        self.driverLabel.grid(sticky='w')
+
+        ####################################################
+        # Kick off the tick
+        self.info = sharedMemoryAPI.SimInfoAPI()
+        self.__tick()
+
+        ####################################### 
+
+    def __tick(self):
+        # timed callback to update live status
+        self.vars['rF2 running'].set(self.info.isRF2running())
+        self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
+        self.vars['Track loaded'].set(self.info.isTrackLoaded())
+        self.vars['On track'].set(self.info.isOnTrack())
+        self.driverLabel.config(text=self.info.driverName())
+        #self.vars['Escape pressed'].set(not self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap)
+        if not self.info.isOnTrack() or \
+            self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
+            self.vars['Escape pressed'].set(False)
+        else:
+            self.vars['Escape pressed'].set(True)
+        self._timestamp = self.info.playersVehicleTelemetry().mElapsedTime
+
+        self.vars['AI driving'].set(self.info.isOnTrack() and \
+            self.info.isAiDriving())
+        self.parentFrame.after(200, self.__tick)
+
+    def _createVar(self, name, value):
+        self.vars[name] = tk.StringVar(name=name)
+        self.vars[name].set(value)
+
+    def _createBoolVar(self, name, value):
+        self.vars[name] = tk.BooleanVar(name=name)
+        self.vars[name].set(value)
 
 
 class headlightControlsFrame(ControlFrame):
@@ -405,13 +582,17 @@ class Run:
             if self.config_o.get(name, 'Controller') == KEYBOARD:
                 _keyboard_control = True
                 break
+        """
         tk.Label(self.parentFrame,
                  text="This window is only needed to capture keyboard input").\
             grid(row=0, column=0)
+        """
         if _keyboard_control:
             root.bind('<KeyPress>', self.tk_event_callback)
+        """
         else:  # minimise the windown
             self.root.wm_state('iconic')
+        """
 
     def pygame_callback(self, event):
         """ docstring """
