@@ -35,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Configurer.JPG" />
-    <Content Include="makeConfigurer.bat" />
     <Content Include="makeexe.bat" />
     <Content Include="pyDirectInputKeySend\.git" />
     <Content Include="pyInstallerSetup.bat" />

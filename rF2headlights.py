@@ -190,6 +190,8 @@ class HeadlightControl:
                     # 4     All the other drivers have them on
         """
         _on = False
+        if self._flashing:
+            return  # Don't turn headlights on when flashing
 
         if on_automatically and not self.are_headlights_on():
             _num_drivers = self._info.Rf2Scor.mScoringInfo.mNumVehicles

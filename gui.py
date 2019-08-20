@@ -29,7 +29,7 @@ def status_poker_fn(string) -> None:
     except:
         pass
 
-BUILD_REVISION = 33  # The git commit count
+BUILD_REVISION = 34  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
 versionDate = '2019-08-20'
 
