@@ -12,7 +12,7 @@
     <OutputPath>.</OutputPath>
     <Name>rF2headlights</Name>
     <RootNamespace>rF2flash</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|env3.7|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +51,15 @@
     <Folder Include="resources\" />
   </ItemGroup>
   <ItemGroup>
+    <Interpreter Include="env3.7\">
+      <Id>env3.7</Id>
+      <Version>3.7</Version>
+      <Description>env3.7 (Python 3.7 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
     <Interpreter Include="env\">
       <Id>env</Id>
       <Version>3.6</Version>
