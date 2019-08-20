@@ -14,9 +14,9 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, Pre
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, KEYBOARD, TIMER_EVENT
 
-BUILD_REVISION = 27  # The git branch commit count
-versionStr = 'rF2headlights V0.3.%d' % BUILD_REVISION
-versionDate = '2019-08-19'
+BUILD_REVISION = 29  # The git branch commit count
+versionStr = 'rF2headlights V0.4.%d' % BUILD_REVISION
+versionDate = '2019-08-20'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -66,26 +66,39 @@ def main():
     pit_lane =              config_o.get('miscellaneous', 'pit_lane') == '1'
     flash_duration =    int(config_o.get('miscellaneous', 'flash_duration'))
     pit_flash_duration =int(config_o.get('miscellaneous', 'pit_flash_duration'))
+    default_to_on =         config_o.get('miscellaneous', 'default_to_on') == '1'
+    on_automatically =  int(config_o.get('miscellaneous', 'on_automatically'))
     # pylint: enable=C0326
 
+    _player_is_driving = False
     _o_run = run()
     _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
     while True:
         _cmd = _o_run.running()
-        #print(_cmd)
-        if _cmd == 'Headlights off':
-            headlightFlash_o.on()
-        if _cmd == 'Headlights on':
-            headlightFlash_o.off()
-        if _cmd == 'Flash headlights':
-            headlightFlash_o.four_flashes(flash_duration)
-        if _cmd == 'Toggle headlights':
-            headlightFlash_o.toggle()
-        if _cmd == TIMER_EVENT:
-            if pit_limiter:
-                headlightFlash_o.check_pit_limiter(pit_flash_duration)
-            if pit_lane:
-                headlightFlash_o.check_pit_lane(pit_flash_duration)
+        if headlightFlash_o.player_is_driving():
+            if not _player_is_driving:
+                # First time player takes control
+                _player_is_driving = True
+                if default_to_on:
+                    print('default_to_on')
+                    headlightFlash_o.on()
+
+            if _cmd == 'Headlights off':
+                headlightFlash_o.on()
+            if _cmd == 'Headlights on':
+                headlightFlash_o.off()
+            if _cmd == 'Flash headlights':
+                headlightFlash_o.four_flashes(flash_duration)
+            if _cmd == 'Toggle headlights':
+                headlightFlash_o.toggle()
+            if _cmd == TIMER_EVENT:
+                if pit_limiter:
+                    headlightFlash_o.check_pit_limiter(pit_flash_duration)
+                if pit_lane:
+                    headlightFlash_o.check_pit_lane(pit_flash_duration)
+                headlightFlash_o.automatic_headlights(on_automatically)
+        else:
+            _player_is_driving = False
         if _cmd == 'QUIT':
             break
 
@@ -103,10 +116,9 @@ class HeadlightControl:
     _info = sharedMemoryAPI.SimInfoAPI()
     if _info.isRF2running():
         print('rFactor2 is running')
+        print(_info.versionCheckMsg)
     else:
         print('\nrFactor2 is not running\n')
-        quit_program(98)
-    print(_info.versionCheckMsg)
 
     def __init__(self) -> None:
         """ docstring """
@@ -171,6 +183,43 @@ class HeadlightControl:
         if self.are_headlights_on():
             self.toggle()
 
+    def automatic_headlights(self, on_automatically) -> None:
+        """
+        # Headlights on when:
+                    # 0     Driver turns them on
+                    # 1     At least one other driver has them on
+                    # 2     More than one other driver has them on
+                    # 3     At least half of the other drivers have them on
+                    # 4     All the other drivers have them on
+        """
+        _on = False
+
+        if on_automatically and not self.are_headlights_on():
+            _num_drivers = self._info.Rf2Scor.mScoringInfo.mNumVehicles
+            _num_drivers_with_lights = 0
+            for _driver in range(_num_drivers):
+                if self._info.Rf2Tele.mVehicles[_driver].mHeadlights:
+                    _num_drivers_with_lights += 1
+            # Total includes the player so
+            _num_drivers -= 1
+
+            if on_automatically == 1 and _num_drivers_with_lights:
+                _on = True
+                print('At least one other driver has headlights on')
+            if on_automatically == 2 and _num_drivers_with_lights > 1:
+                _on = True
+                print('More than one other driver has headlights on')
+            if on_automatically == 3 and \
+                _num_drivers_with_lights >= (_num_drivers/2):
+                _on = True
+                print('At least half of the other drivers have headlights on')
+            if on_automatically == 4 and \
+                _num_drivers_with_lights >= _num_drivers:
+                _on = True
+                print('All the other drivers have headlights on')
+            if _on:
+                self.on()
+
     def toggle(self) -> None:
         """
         Now this program is controlling the headlights a replacement
@@ -233,6 +282,13 @@ class HeadlightControl:
     def flashing(self) -> bool:
         """ Are the headlights being flashed? """
         return self._flashing
+
+    def player_is_driving(self) -> bool:
+        """ If not there's no point trying to control the headlights """
+        return self._info.isRF2running() and \
+            self._info.versionCheckMsg != '' and \
+            self._info.isTrackLoaded() and \
+            self._info.isOnTrack()
 
 
 if __name__ == "__main__":

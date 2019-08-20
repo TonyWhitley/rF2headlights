@@ -15,6 +15,13 @@ MISC_VALUES = {
     'pit_lane': '1',            # 1: flash headlights when in pit lane
     'flash_duration': '20',     # Overtake flash duration
     'pit_flash_duration': '20', # Pit lane flash duration
+    'default_to_on': '0',       # Headlights on normally, driver can turn them off
+    'on_automatically': '0',    # Headlights on when:
+                    # 0     Driver turns them on
+                    # 1     At least one other driver has them on
+                    # 2     More than one other driver has them on
+                    # 3     At least half of the other drivers have them on
+                    # 4     All the other drivers have them on
 }
 
 
