@@ -15,9 +15,30 @@ from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 
-BUILD_REVISION = 29  # The git commit count
+global status_poker # Function pointer to poke text into status window
+global status_poker_scroll
+#status_poker = None
+def status_poker_fn(string) -> None:
+    """
+    Jesus! Hack alert!
+    Poke text into rFactorStatusFrame class's text widget
+    """
+    try:
+        status_poker(tk.END, string+'\n')
+        status_poker_scroll(tk.END)
+    except:
+        pass
+
+BUILD_REVISION = 33  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
 versionDate = '2019-08-20'
+
+program_credits = "Reads the headlight state from rF2 using a Python\n" \
+    "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
+    "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
+    "Original Python mapping implemented by\n" \
+    "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
+    "Icon made by https://www.flaticon.com/authors/freepik"
 
 KEYBOARD = 'keyboard'
 
@@ -83,14 +104,14 @@ def icon(_root):
 
 
 class Tab:
-    """ docstring """
+    """ Configure the headlight control app """
     parentFrame = None
     controller_o = Controller()
     config_o = Config()
     root = None
     xyPadding = 10
 
-    def tk_event_callback(self, _event):    # pylint: disable=no-self-use
+    def __tk_event_callback(self, _event):    # pylint: disable=no-self-use
         """ docstring """
         global tk_event  # pylint: disable=global-statement
         tk_event = _event
@@ -103,7 +124,10 @@ class Tab:
         self.parentFrame = parentFrame
         icon(self.root)
 
-        self.root.bind('<KeyPress>', self.tk_event_callback)
+        self.root.bind('<KeyPress>', self.__tk_event_callback)
+
+        #############################
+        # Three sub-frames
 
         self.headlight_controls_frame_o = headlightControlsFrame(
             self.parentFrame)
@@ -115,11 +139,20 @@ class Tab:
 
         self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(
             self.parentFrame)
-        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=1,
+        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=0,
+                                                                         row=3,
+                                                                         sticky='new',
+                                                                         padx=self.xyPadding,
+                                                                         rowspan=2)
+
+        self.headlightOptionsFrame_o = headlightOptionsFrame(
+            self.parentFrame)
+        self.headlightOptionsFrame_o.tkFrame_headlight_control.grid(column=1,
                                                                          row=2,
                                                                          sticky='new',
                                                                          padx=self.xyPadding,
                                                                          rowspan=2)
+
 
         self.rFactorStatusFrame_o = rFactorStatusFrame(
             self.parentFrame)
@@ -132,6 +165,7 @@ class Tab:
         """
 
         #############################
+        # And a "Save configuration" button
         buttonFont = font.Font(weight='bold', size=10)
 
         self.tkButtonSave = tk.Button(
@@ -145,12 +179,11 @@ class Tab:
         self.tkButtonSave.grid(column=1, row=4, pady=25)
         #############################
 
-        #self.controller_o.run(self.tk_event_callback, parentFrame)
-
     def save(self):
-        """ docstring """
+        """ Save all the settings written to the config data struct """
         self.headlight_controls_frame_o.save()
         self.rf_headlight_control_frame_o.save()
+        self.headlightOptionsFrame_o.save()
         self.config_o.write()
 
     def getSettings(self):  # pylint: disable=no-self-use
@@ -175,15 +208,17 @@ class ControlFrame(Tab):
 
         self.parentFrame = parentFrame
         self.headlight_controls = _headlight_controls
+        self.config_o = super().config_o
         self.tkFrame_headlight_control = tk.LabelFrame(parentFrame,
                                                        text=frame_name,
                                                        padx=self.xyPadding,
                                                        pady=self.xyPadding)
 
-        tk.Label(self.tkFrame_headlight_control,
-                 text="Controller").grid(row=0, column=1)
-        tk.Label(self.tkFrame_headlight_control,
-                 text="Control").grid(row=0, column=2)
+        if len(self.headlight_controls):
+            tk.Label(self.tkFrame_headlight_control,
+                     text="Controller").grid(row=0, column=1)
+            tk.Label(self.tkFrame_headlight_control,
+                     text="Control").grid(row=0, column=2)
 
         ##########################################################
         for _control_num, (name, control) in enumerate(self.headlight_controls.items()):
@@ -231,7 +266,6 @@ class ControlFrame(Tab):
 
     def pygame_callback(self, event):
         """ docstring """
-        # print(event)
         self.pygame_event = event
 
     def set_control(self, name, controller_o):
@@ -269,29 +303,42 @@ class ControlFrame(Tab):
             self.config_o.set(name, 'Controller',
                               control['svControllerName'].get())
             self.config_o.set(name, 'Control', control['svControl'].get())
+        # super().save()  # Parent class handles writing the struct to disc
 
+class headlightControlsFrame(ControlFrame):
+    """
+    Frame for specifying the controls used by this program to select
+    flashing the headlights etc.
+    """
+    def __init__(self, parentFrame):
+        super().__init__(parentFrame,
+                         'Player Headlight Controls',
+                         headlight_controls)
 
 class rFactorHeadlightControlFrame(ControlFrame):
     """
     Frame for selecting the control that operates the headlight toggle
     Must be a keyboard key
-    Also includes the pit limiter / pit lane flash options
     """
-
     def __init__(self, parentFrame):
         super().__init__(parentFrame,
                          'rFactor Headlight Control',
                          rfactor_headlight_control)
+        ##########################################################
         ttk.Label(self.tkFrame_headlight_control,
                   text='Must be a keyboard key\n').\
             grid()
-        ##########################################################
-        _separator = ttk.Separator(self.tkFrame_headlight_control,
-                                   orient="horizontal")
-        _separator.grid(column=0,
-                        sticky="we",
-                        columnspan=3)
-        ##########################################################
+
+class headlightOptionsFrame(ControlFrame):
+    """
+    Frame for selecting the pit limiter / pit lane flash options
+    and the automatic turning on of the headlights
+    """
+    def __init__(self, parentFrame):
+        super().__init__(parentFrame,
+                         'Headlight Options',
+                         _headlight_controls={})
+
         self.pit_limiter = tk.IntVar()
         tkCheckbutton_pitLimiter = tk.Checkbutton(self.tkFrame_headlight_control,
                                                   var=self.pit_limiter,
@@ -373,6 +420,12 @@ class rFactorHeadlightControlFrame(ControlFrame):
         self.tkSlider_pit_flash_duration.set(x)
 
         ##########################################################
+        _separator = ttk.Separator(self.tkFrame_headlight_control,
+                                   orient="horizontal")
+        _separator.grid(column=0,
+                        sticky="we",
+                        columnspan=3)
+        ##########################################################
         _row += 2
         self.vars = {}
         _name = 'Automatic headlights'
@@ -385,7 +438,7 @@ class rFactorHeadlightControlFrame(ControlFrame):
                                         column=0,
                                         row=_row)
         self.tkSlider_on_automatically = tk.Scale(self.tkFrame_headlight_control,
-                                                  command=self._on_automatically_val,
+                                                  command=self.__on_automatically_val,
                                                   showvalue=0,
                                                   from_=0,
                                                   to=4,
@@ -399,7 +452,7 @@ class rFactorHeadlightControlFrame(ControlFrame):
         if not x:
             x = 10
         self.tkSlider_on_automatically.set(x)
-        self._on_automatically_val(x)
+        self.__on_automatically_val(x)
         
         tkLabel_on_automatically_val = tk.Label(self.tkFrame_headlight_control,
                                               textvariable=self.vars['Automatic headlights'])
@@ -409,7 +462,8 @@ class rFactorHeadlightControlFrame(ControlFrame):
                                         columnspan=2,
                                         row=_row)
         
-    def _on_automatically_val(self, event):
+    def __on_automatically_val(self, event):
+        """ Callback when Automatic headlight slider changes """
         _strings = [
             'Driver turns them on',
             'At least one other driver has them on',
@@ -420,7 +474,7 @@ class rFactorHeadlightControlFrame(ControlFrame):
         self.vars['Automatic headlights'].set(_strings[int(event)])
 
     def save(self):
-        super().save()
+        """ Save the settings in this frame to the config data struct """
         self.config_o.set('miscellaneous', 'pit_limiter',
                           str(self.pit_limiter.get()))
         self.config_o.set('miscellaneous', 'pit_lane',
@@ -433,17 +487,24 @@ class rFactorHeadlightControlFrame(ControlFrame):
                           str(self.tkSlider_pit_flash_duration.get()))
         self.config_o.set('miscellaneous', 'on_automatically',
                           str(self.tkSlider_on_automatically.get()))
+        # super().save()  # Parent class handles writing the struct to disc
 
 class rFactorStatusFrame(ControlFrame):
     """
-    Frame for selecting the control that operates the headlight toggle
-    Must be a keyboard key
-    Also includes the pit limiter / pit lane flash options
+    Frame to show rFactor status
+    rF2 running
+    Shared memory working
+    Track loaded
+    On track
+    Escape pressed
+    AI driving
+    Player name
     """
-
     def __init__(self, parentFrame):
         ####################################################
         # Status frame
+        global status_poker
+        global status_poker_scroll
         super().__init__(parentFrame,
                          'rFactor Status',
                          {})
@@ -455,7 +516,7 @@ class rFactorStatusFrame(ControlFrame):
         tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
         tkFrame_Status.grid(column=2, row=2, sticky='nsew', padx=self.xPadding)
 
-        self._createBoolVar('rF2 running', False)
+        self.__createBoolVar('rF2 running', False)
         self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status, 
                                                         text='rF2 running',
                                                         justify='l',
@@ -463,46 +524,67 @@ class rFactorStatusFrame(ControlFrame):
                                                         variable=self.vars['rF2 running'])
         self._tkCheckbuttons['rF2 running'].grid(sticky='w')
 
-        self._createBoolVar('Shared memory working', False)
+        self.__createBoolVar('Shared memory working', False)
         self._tkCheckbuttons['Shared memory working'] = tk.Checkbutton(tkFrame_Status, 
-                                                        text='Shared memory working',
+                                                        text='Shared memory\nworking',
                                                         justify='l',
                                                         #indicatoron=0,
                                                         variable=self.vars['Shared memory working'])
         self._tkCheckbuttons['Shared memory working'].grid(sticky='w')
 
-        self._createBoolVar('Track loaded', False)
+        self.__createBoolVar('Track loaded', False)
         self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status, 
                                                         text='Track loaded',
                                                         variable=self.vars['Track loaded'])
         self._tkCheckbuttons['Track loaded'].grid(sticky='w')
 
-        self._createBoolVar('On track', False)
+        self.__createBoolVar('On track', False)
         self._tkCheckbuttons['On track'] = tk.Checkbutton(tkFrame_Status, 
                                                         text='On track',
                                                         variable=self.vars['On track'])
         self._tkCheckbuttons['On track'].grid(sticky='w')
 
-        self._createBoolVar('Escape pressed', False)
+        self.__createBoolVar('Escape pressed', False)
         self._tkCheckbuttons['Escape pressed'] = tk.Checkbutton(tkFrame_Status, 
                                                         text='Escape pressed',
                                                         variable=self.vars['Escape pressed'])
         self._tkCheckbuttons['Escape pressed'].grid(sticky='w')
 
-        self._createBoolVar('AI driving', False)
+        self.__createBoolVar('AI driving', False)
         self._tkCheckbuttons['AI driving'] = tk.Checkbutton(tkFrame_Status, 
                                                         text='AI driving',
                                                         variable=self.vars['AI driving'])
         self._tkCheckbuttons['AI driving'].grid(sticky='w')
 
-        self._createVar('Player', False)
-        self.driverLabel = tk.Label(tkFrame_Status,
-                                text='')
-        self.driverLabel.grid(sticky='w')
+        _row = 5
+        self.__createVar('Player', False)
+        _driverLabel = tk.Label(tkFrame_Status,
+                                text='Driver')
+        _driverLabel.grid(column=1,
+                          row=_row,
+                          sticky='e'
+                          )
+        self.driverLabel = tk.Entry(tkFrame_Status,
+                                textvariable=self.vars['Player'])
+        self.driverLabel.grid(column=2,
+                              row=_row,
+                              sticky='w')
+
+        self.__createVar('Status message', 'Status\nstat2\nstat3')
+        self.statusText = tk.Text(tkFrame_Status,
+                                   height=5,
+                                   width=20
+                                   )
+        self.statusText.grid(column=0,
+                             columnspan=3,
+                             sticky='nswe')
+        status_poker = self.statusText.insert
+        status_poker_scroll = self.statusText.see
 
         ####################################################
         # Kick off the tick
         self.info = sharedMemoryAPI.SimInfoAPI()
+        self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
         self.__tick()
 
         ####################################### 
@@ -513,7 +595,7 @@ class rFactorStatusFrame(ControlFrame):
         self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
         self.vars['Track loaded'].set(self.info.isTrackLoaded())
         self.vars['On track'].set(self.info.isOnTrack())
-        self.driverLabel.config(text=self.info.driverName())
+        self.vars['Player'].set(self.info.driverName())
         #self.vars['Escape pressed'].set(not self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap)
         if not self.info.isOnTrack() or \
             self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
@@ -526,29 +608,17 @@ class rFactorStatusFrame(ControlFrame):
             self.info.isAiDriving())
         self.parentFrame.after(200, self.__tick)
 
-    def _createVar(self, name, value):
+    def __createVar(self, name, value):
         self.vars[name] = tk.StringVar(name=name)
         self.vars[name].set(value)
 
-    def _createBoolVar(self, name, value):
+    def __createBoolVar(self, name, value):
         self.vars[name] = tk.BooleanVar(name=name)
         self.vars[name].set(value)
 
 
-class headlightControlsFrame(ControlFrame):
-    """
-    Frame for specifying the controls used by this program to select
-    flashing the headlights etc.
-    """
-
-    def __init__(self, parentFrame):
-        super().__init__(parentFrame,
-                         'Player Headlight Controls',
-                         headlight_controls)
-
-
 def main():
-    """ docstring """
+    """ Run the tab as a standalone frame """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
     tabConfigureFlash = ttk.Frame(
@@ -556,7 +626,7 @@ def main():
     tabConfigureFlash.grid()
 
     __o_tab = Tab(tabConfigureFlash, _root)
-    # root.mainloop()
+    return _root, tabConfigureFlash
 
 
 class Run:
@@ -596,7 +666,6 @@ class Run:
 
     def pygame_callback(self, event):
         """ docstring """
-        # print(event)
         self.pygame_event = event
 
     def running(self):
@@ -637,13 +706,16 @@ class Run:
                 self.pygame_event = None
 
 
-def run():
+def run(_root, tabConfigureFlash):
     """ docstring """
+    """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
     runWindow = ttk.Frame(root, width=200, height=200,
                           relief='sunken', borderwidth=5)
     runWindow.grid()
+    """
+    runWindow = tabConfigureFlash
     _o_run = Run(runWindow, _root)
     return _o_run
 

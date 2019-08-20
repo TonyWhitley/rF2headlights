@@ -12,19 +12,7 @@ from threading import Timer
 from configIni import Config
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
-from gui import run, run_main, main as gui_main, KEYBOARD, TIMER_EVENT
-
-BUILD_REVISION = 29  # The git branch commit count
-versionStr = 'rF2headlights V0.4.%d' % BUILD_REVISION
-versionDate = '2019-08-20'
-
-program_credits = "Reads the headlight state from rF2 using a Python\n" \
-    "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
-    "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
-    "Original Python mapping implemented by\n" \
-    "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
-    "Icon made by https://www.flaticon.com/authors/freepik"
-
+from gui import run, run_main, main as gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 
 #################################################################################
 def SetTimer(mS, callback, _args=None) -> Timer:
@@ -61,18 +49,22 @@ def main():
     """ docstring """
     headlightFlash_o = HeadlightControl()
     config_o = Config()
-    # pylint: disable=C0326
-    pit_limiter =           config_o.get('miscellaneous', 'pit_limiter') == '1'
-    pit_lane =              config_o.get('miscellaneous', 'pit_lane') == '1'
-    flash_duration =    int(config_o.get('miscellaneous', 'flash_duration'))
-    pit_flash_duration =int(config_o.get('miscellaneous', 'pit_flash_duration'))
-    default_to_on =         config_o.get('miscellaneous', 'default_to_on') == '1'
-    on_automatically =  int(config_o.get('miscellaneous', 'on_automatically'))
-    # pylint: enable=C0326
+    def pit_limiter():
+        return config_o.get('miscellaneous', 'pit_limiter') == '1'
+    def pit_lane():
+        return config_o.get('miscellaneous', 'pit_lane') == '1'
+    def flash_duration():
+        return int(config_o.get('miscellaneous', 'flash_duration'))
+    def pit_flash_duration():
+        return int(config_o.get('miscellaneous', 'pit_flash_duration'))
+    def default_to_on():
+        return config_o.get('miscellaneous', 'default_to_on') == '1'
+    def on_automatically():
+        return int(config_o.get('miscellaneous', 'on_automatically'))
 
-    gui_main()
+    _root,tabConfigureFlash = gui_main()
     _player_is_driving = False
-    _o_run = run()
+    _o_run = run(_root,tabConfigureFlash)
     _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
     while True:
         _cmd = _o_run.running()
@@ -80,8 +72,8 @@ def main():
             if not _player_is_driving:
                 # First time player takes control
                 _player_is_driving = True
-                if default_to_on:
-                    print('default_to_on')
+                if default_to_on():
+                    status_poker_fn('default_to_on')
                     headlightFlash_o.on()
 
             if _cmd == 'Headlights off':
@@ -89,15 +81,15 @@ def main():
             if _cmd == 'Headlights on':
                 headlightFlash_o.off()
             if _cmd == 'Flash headlights':
-                headlightFlash_o.four_flashes(flash_duration)
+                headlightFlash_o.four_flashes(flash_duration())
             if _cmd == 'Toggle headlights':
                 headlightFlash_o.toggle()
             if _cmd == TIMER_EVENT:
-                if pit_limiter:
-                    headlightFlash_o.check_pit_limiter(pit_flash_duration)
-                if pit_lane:
-                    headlightFlash_o.check_pit_lane(pit_flash_duration)
-                headlightFlash_o.automatic_headlights(on_automatically)
+                if pit_limiter():
+                    headlightFlash_o.check_pit_limiter(pit_flash_duration())
+                if pit_lane():
+                    headlightFlash_o.check_pit_lane(pit_flash_duration())
+                headlightFlash_o.automatic_headlights(on_automatically())
         else:
             _player_is_driving = False
         if _cmd == 'QUIT':
@@ -135,7 +127,7 @@ class HeadlightControl:
                     print(_keyCode, end=', ')
                 quit_program(99)
         else:
-            print('\nHeadlight toggle control must be a key.\n')
+            status_poker_fn('\nHeadlight toggle control must be a key.\n')
             quit_program(99)
 
     def count_down(self) -> bool:
@@ -148,6 +140,7 @@ class HeadlightControl:
 
     def four_flashes(self, flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
+        status_poker_fn('Overtaking flash')
         self._count = 8  # 4 flashes
         self.timer = flash_duration
         self.start_flashing(self.count_down)
@@ -172,15 +165,18 @@ class HeadlightControl:
         """ Has the car entered the pit lane? """
         if self._info.isOnTrack():
             if not self.__not_in_pit_lane():
+                status_poker_fn('Entered pit lane')
                 self.pit_lane_flashes(pit_flash_duration)
 
     def on(self) -> None:
         """ Turn them on regardless """
+        status_poker_fn('Headlights on')
         if not self.are_headlights_on():
             self.toggle()
 
     def off(self) -> None:
         """ Turn them off regardless """
+        status_poker_fn('Headlights off')
         if self.are_headlights_on():
             self.toggle()
 
@@ -206,18 +202,18 @@ class HeadlightControl:
 
             if on_automatically == 1 and _num_drivers_with_lights:
                 _on = True
-                print('At least one other driver has headlights on')
+                status_poker_fn('At least one other driver has headlights on')
             if on_automatically == 2 and _num_drivers_with_lights > 1:
                 _on = True
-                print('More than one other driver has headlights on')
+                status_poker_fn('More than one other driver has headlights on')
             if on_automatically == 3 and \
                 _num_drivers_with_lights >= (_num_drivers/2):
                 _on = True
-                print('At least half of the other drivers have headlights on')
+                status_poker_fn('At least half of the other drivers have headlights on')
             if on_automatically == 4 and \
                 _num_drivers_with_lights >= _num_drivers:
                 _on = True
-                print('All the other drivers have headlights on')
+                status_poker_fn('All the other drivers have headlights on')
             if _on:
                 self.on()
 
@@ -249,11 +245,11 @@ class HeadlightControl:
                             # type: ignore
                             return
                 else:
-                    print('Not on track')
+                    status_poker_fn('Not on track')
             else:
-                print('Track not loaded')
+                status_poker_fn('Track not loaded')
         else:
-            print('rFactor 2 not running')
+            status_poker_fn('rFactor 2 not running')
         self.stop_flashing()
 
     def stop_flashing(self):
