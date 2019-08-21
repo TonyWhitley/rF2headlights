@@ -12,7 +12,7 @@ from threading import Timer
 from configIni import Config
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
-from gui import run, run_main, main as gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
+from gui import run, gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 
 #################################################################################
 def SetTimer(mS, callback, _args=None) -> Timer:
@@ -62,9 +62,9 @@ def main():
     def on_automatically():
         return int(config_o.get('miscellaneous', 'on_automatically'))
 
-    _root,tabConfigureFlash = gui_main()
+    _root, tabConfigureFlash = gui_main()
     _player_is_driving = False
-    _o_run = run(_root,tabConfigureFlash)
+    _o_run = run(_root, tabConfigureFlash)
     _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
     while True:
         _cmd = _o_run.running()
