@@ -29,9 +29,9 @@ def status_poker_fn(string) -> None:
     except:
         pass
 
-BUILD_REVISION = 34  # The git commit count
+BUILD_REVISION = 35  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
-versionDate = '2019-08-20'
+versionDate = '2019-08-21'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -132,37 +132,35 @@ class Tab:
         self.headlight_controls_frame_o = headlightControlsFrame(
             self.parentFrame)
         self.headlight_controls_frame_o.tkFrame_headlight_control.grid(column=0,
-                                                                       row=2,
+                                                                       row=0,
                                                                        sticky='new',
                                                                        padx=self.xyPadding,
-                                                                       rowspan=2)
-
-        self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(
-            self.parentFrame)
-        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=0,
-                                                                         row=3,
-                                                                         sticky='new',
-                                                                         padx=self.xyPadding,
-                                                                         rowspan=2)
+                                                                       rowspan=1)
 
         self.headlightOptionsFrame_o = headlightOptionsFrame(
             self.parentFrame)
         self.headlightOptionsFrame_o.tkFrame_headlight_control.grid(column=1,
-                                                                         row=2,
-                                                                         sticky='new',
-                                                                         padx=self.xyPadding,
-                                                                         rowspan=2)
+                                                                    row=0,
+                                                                    sticky='new',
+                                                                    padx=self.xyPadding,
+                                                                    rowspan=2)
 
 
         self.rFactorStatusFrame_o = rFactorStatusFrame(
             self.parentFrame)
-        """
-        self.rFactorStatusFrame_o.grid(column=1,
-                                                                         row=2,
+        self.rFactorStatusFrame_o.tkFrame_headlight_control.grid(column=2,
+                                                                 row=0,
+                                                                 sticky='new',
+                                                                 padx=self.xyPadding,
+                                                                 rowspan=3)
+
+        self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(
+            self.parentFrame)
+        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=0,
+                                                                         row=1,
                                                                          sticky='new',
                                                                          padx=self.xyPadding,
-                                                                         rowspan=2)
-        """
+                                                                         rowspan=1)
 
         #############################
         # And a "Save configuration" button
@@ -176,7 +174,10 @@ class Tab:
             background='green',
             font=buttonFont,
             command=self.save)
-        self.tkButtonSave.grid(column=1, row=4, pady=25)
+        self.tkButtonSave.grid(column=1,
+                               row=1,
+                               pady=25,
+                               sticky='s')
         #############################
 
     def save(self):
@@ -514,7 +515,11 @@ class rFactorStatusFrame(ControlFrame):
         self._timestamp = 0
         self.xPadding = 10
         tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
-        tkFrame_Status.grid(column=2, row=2, sticky='nsew', padx=self.xPadding)
+        tkFrame_Status.grid(column=2,
+                            row=0,
+                            rowspan=3,
+                            sticky='nsew',
+                            padx=self.xPadding)
 
         self.__createBoolVar('rF2 running', False)
         self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status, 
@@ -572,8 +577,9 @@ class rFactorStatusFrame(ControlFrame):
 
         self.__createVar('Status message', 'Status\nstat2\nstat3')
         self.statusText = tk.Text(tkFrame_Status,
-                                   height=5,
-                                   width=20
+                                   height=8,
+                                   width=20,
+                                   wrap=tk.WORD
                                    )
         self.statusText.grid(column=0,
                              columnspan=3,
@@ -615,7 +621,6 @@ class rFactorStatusFrame(ControlFrame):
     def __createBoolVar(self, name, value):
         self.vars[name] = tk.BooleanVar(name=name)
         self.vars[name].set(value)
-
 
 def main():
     """ Run the tab as a standalone frame """
