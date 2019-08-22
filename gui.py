@@ -20,6 +20,7 @@ import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 # pylint: disable=global-variable-undefined
 global status_poker # Function pointer to poke text into status window
 global status_poker_scroll
+_config_run_state = None
 
 def status_poker_fn(string) -> None:
     """
@@ -32,7 +33,7 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 37  # The git commit count
+BUILD_REVISION = 38  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
 versionDate = '2019-08-22'
 
@@ -168,20 +169,39 @@ class Tab:
         #############################
         # And a "Save configuration" button
         buttonFont = font.Font(weight='bold', size=10)
-
+        self.config_run_state = ''
         self.tkButtonSave = tk.Button(
             parentFrame,
-            text="Save configuration",
-            width=20,
+            width=25,
             height=2,
-            background='green',
             font=buttonFont,
-            command=self.save)
+            command=self.config_save_toggle)
+        # Initialise
+        self.config_save_toggle()
         self.tkButtonSave.grid(column=1,
                                row=1,
                                pady=25,
                                sticky='s')
         #############################
+
+    def config_save_toggle(self):
+        """ Toggle button between Run and Configure """
+        global _config_run_state
+
+        if self.config_run_state == 'run':
+            # change to config
+            self.tkButtonSave.config(
+                text='Save configuration and run',
+                background='green')
+            self.config_run_state = 'config'
+        else:
+            # change to run
+            self.save() # having saved the config
+            self.tkButtonSave.config(
+                text='Stop to configure',
+                background='red')
+            self.config_run_state = 'run'
+        _config_run_state = self.config_run_state
 
     def save(self):
         """ Save all the settings written to the config data struct """
@@ -255,8 +275,11 @@ class ControlFrame(Tab):
                                                  sticky='e')
             ##########################################################
             _control_line['svControl'] = tk.StringVar()
+            __control = super().config_o.get(name, 'Control')
+            #if __control.startswith('DIK_'):
+            #    __control = __control[len('DIK_'):]
             _control_line['svControl'].set(
-                super().config_o.get(name, 'Control'))
+                __control)
             _control_line['tkLabel'] = tk.Label(self.tkFrame_headlight_control,
                                                 textvariable=control['svControl'],
                                                 fg='SystemInactiveCaptionText',
@@ -277,29 +300,33 @@ class ControlFrame(Tab):
         global tk_event  # pylint: disable=global-statement
         tk_event = None
         self.pygame_event = None
-        while not tk_event and not self.pygame_event:
+        while 1:
             # Run pygame and tk to get latest input
             controller_o.pygame_tk_check(
                 self.pygame_callback, self.parentFrame)
-        if tk_event:
-            dik = KeycodeToDIK(tk_event.keycode)
-            self.headlight_controls[name]['svControl'].set(dik)
-            self.headlight_controls[name]['tkLabel'].configure(text=dik)
-            self.headlight_controls[name]['ControllerName'].configure(
-                text=KEYBOARD)
-            self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
-            return tk_event.char
-        if self.pygame_event:
-            if not isinstance(self.pygame_event, str):
-                _button = self.pygame_event.button
-                _joy = controller_o.controller_names[self.pygame_event.joy]
-                self.headlight_controls[name]['svControl'].set(_button)
-                self.headlight_controls[name]['tkLabel'].configure(
-                    text=str(_button))
+            if tk_event:
+                dik = KeycodeToDIK(tk_event.keycode)
+                self.headlight_controls[name]['svControl'].set(dik)
+                #if dik.startswith('DIK_'):
+                #    dik = dik[len('DIK_'):]
+                self.headlight_controls[name]['tkLabel'].configure(text=dik)
                 self.headlight_controls[name]['ControllerName'].configure(
-                    text=_joy)
-                self.headlight_controls[name]['svControllerName'].set(_joy)
-                return _button
+                    text=KEYBOARD)
+                self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
+                return tk_event.char
+            if self.pygame_event:
+                if not isinstance(self.pygame_event, str):
+                    if name != 'rFactor Toggle':
+                        # The control sent to rFactor must be a key
+                        _button = self.pygame_event.button
+                        _joy = controller_o.controller_names[self.pygame_event.joy]
+                        self.headlight_controls[name]['svControl'].set(_button)
+                        self.headlight_controls[name]['tkLabel'].configure(
+                            text=str(_button))
+                        self.headlight_controls[name]['ControllerName'].configure(
+                            text=_joy)
+                        self.headlight_controls[name]['svControllerName'].set(_joy)
+                        return _button
 
     def save(self):
         """ Save the Controller/Control pairs to the .ini file """
@@ -607,32 +634,33 @@ class rFactorStatusFrame(ControlFrame):
         ####################################################
 
     def __tick(self):
-        # timed callback to update live status
-        if self.info.isRF2running():
-            self.vars['rF2 running'].set(True)
-            if not self.rFactor_running:
-                if self.info.isSharedMemoryAvailable():
-                    self.statusText.insert(tk.END, 'rFactor 2 running\n')
-                    self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
-                    self.rFactor_running = True
-        else:
-            if self.rFactor_running:
-                self.statusText.insert(tk.END, 'rFactor 2 exited\n')
-                self.rFactor_running = False
-            self.vars['rF2 running'].set(False)
-        self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
-        self.vars['Track loaded'].set(self.info.isTrackLoaded())
-        self.vars['On track'].set(self.info.isOnTrack())
-        self.vars['Player'].set(self.info.driverName())
-        if not self.info.isOnTrack() or \
-            self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
-            self.vars['Escape pressed'].set(False)
-        else:
-            self.vars['Escape pressed'].set(True)
-        self._timestamp = self.info.playersVehicleTelemetry().mElapsedTime
+        if _config_run_state == 'run':
+            # timed callback to update live status
+            if self.info.isRF2running():
+                self.vars['rF2 running'].set(True)
+                if not self.rFactor_running:
+                    if self.info.isSharedMemoryAvailable():
+                        self.statusText.insert(tk.END, 'rFactor 2 running\n')
+                        self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
+                        self.rFactor_running = True
+            else:
+                if self.rFactor_running:
+                    self.statusText.insert(tk.END, 'rFactor 2 exited\n')
+                    self.rFactor_running = False
+                self.vars['rF2 running'].set(False)
+            self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
+            self.vars['Track loaded'].set(self.info.isTrackLoaded())
+            self.vars['On track'].set(self.info.isOnTrack())
+            self.vars['Player'].set(self.info.driverName())
+            if not self.info.isOnTrack() or \
+                self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
+                self.vars['Escape pressed'].set(False)
+            else:
+                self.vars['Escape pressed'].set(True)
+            self._timestamp = self.info.playersVehicleTelemetry().mElapsedTime
 
-        self.vars['AI driving'].set(self.info.isOnTrack() and \
-            self.info.isAiDriving())
+            self.vars['AI driving'].set(self.info.isOnTrack() and \
+                self.info.isAiDriving())
         self.parentFrame.after(200, self.__tick)
 
     def __createVar(self, name, value):

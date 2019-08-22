@@ -266,8 +266,7 @@ class HeadlightControl:
 
     def player_is_driving(self) -> bool:
         """ If not there's no point trying to control the headlights """
-        return self._info.isRF2running() and \
-            self._info.versionCheckMsg != '' and \
+        return self._info.versionCheckMsg != '' and \
             self._info.isTrackLoaded() and \
             self._info.isOnTrack()
 
