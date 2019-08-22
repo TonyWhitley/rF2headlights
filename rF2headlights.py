@@ -63,14 +63,18 @@ def main():
                     status_poker_fn('default_to_on')
                     headlightFlash_o.on()
 
-            if _cmd == 'Headlights off':
-                headlightFlash_o.on()
             if _cmd == 'Headlights on':
+                headlightFlash_o.on()
+                status_poker_fn('Headlights on')
+            if _cmd == 'Headlights off':
                 headlightFlash_o.off()
+                status_poker_fn('Headlights off')
             if _cmd == 'Flash headlights':
                 headlightFlash_o.four_flashes(flash_duration())
+                status_poker_fn('Overtaking flash')
             if _cmd == 'Toggle headlights':
                 headlightFlash_o.toggle()
+                status_poker_fn('Headlights toggle')
             if _cmd == TIMER_EVENT:
                 if pit_limiter():
                     headlightFlash_o.check_pit_limiter(pit_flash_duration())
@@ -122,7 +126,6 @@ class HeadlightControl:
 
     def four_flashes(self, flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
-        status_poker_fn('Overtaking flash')
         self._count = 8  # 4 flashes
         self.timer = flash_duration
         self.start_flashing(self.count_down)
@@ -152,13 +155,11 @@ class HeadlightControl:
 
     def on(self) -> None:
         """ Turn them on regardless """
-        status_poker_fn('Headlights on')
         if not self.are_headlights_on():
             self.toggle()
 
     def off(self) -> None:
         """ Turn them off regardless """
-        status_poker_fn('Headlights off')
         if self.are_headlights_on():
             self.toggle()
 
