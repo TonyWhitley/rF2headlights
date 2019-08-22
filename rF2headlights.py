@@ -23,20 +23,7 @@ def SetTimer(mS, callback, _args=None) -> Timer:
     else:
         pass  # TBD delete timer?
     return timer
-
-
-def StopTimer(timer) -> None:
-    """ docstring """
-    timer.cancel()
-
-
-def msgBox(string: str) -> None:
-    """ docstring """
-    print(string)
-
 #################################################################################
-
-
 def quit_program(errorCode: int) -> None:
     """ User presses a key before exiting program """
     print('\n\nPress Enter to exit')
@@ -107,11 +94,6 @@ class HeadlightControl:
     _count = 0
     timer = None
     _info = sharedMemoryAPI.SimInfoAPI()
-    if _info.isRF2running():
-        print('rFactor2 is running')
-        print(_info.versionCheckMsg)
-    else:
-        print('\nrFactor2 is not running\n')
 
     def __init__(self) -> None:
         """ docstring """

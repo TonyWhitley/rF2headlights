@@ -32,9 +32,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 36  # The git commit count
+BUILD_REVISION = 37  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
-versionDate = '2019-08-21'
+versionDate = '2019-08-22'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -517,6 +517,7 @@ class rFactorStatusFrame(ControlFrame):
         self._tkCheckbuttons = {}
         self._timestamp = 0
         self.xPadding = 10
+        self.rFactor_running = False
         tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
         tkFrame_Status.grid(column=2,
                             row=0,
@@ -599,14 +600,26 @@ class rFactorStatusFrame(ControlFrame):
         ####################################################
         # Kick off the tick
         self.info = sharedMemoryAPI.SimInfoAPI()
-        self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
+        if not self.info.isRF2running():
+            self.statusText.insert(tk.END, 'rFactor 2 not running\n')
         self.__tick()
 
         ####################################################
 
     def __tick(self):
         # timed callback to update live status
-        self.vars['rF2 running'].set(self.info.isRF2running())
+        if self.info.isRF2running():
+            self.vars['rF2 running'].set(True)
+            if not self.rFactor_running:
+                if self.info.isSharedMemoryAvailable():
+                    self.statusText.insert(tk.END, 'rFactor 2 running\n')
+                    self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
+                    self.rFactor_running = True
+        else:
+            if self.rFactor_running:
+                self.statusText.insert(tk.END, 'rFactor 2 exited\n')
+                self.rFactor_running = False
+            self.vars['rF2 running'].set(False)
         self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
         self.vars['Track loaded'].set(self.info.isTrackLoaded())
         self.vars['On track'].set(self.info.isOnTrack())
@@ -665,17 +678,8 @@ class Run:
             if self.config_o.get(name, 'Controller') == KEYBOARD:
                 _keyboard_control = True
                 break
-        """
-        tk.Label(self.parentFrame,
-                 text="This window is only needed to capture keyboard input").\
-            grid(row=0, column=0)
-        """
         if _keyboard_control:
             root.bind('<KeyPress>', self.tk_event_callback)
-        """
-        else:  # minimise the windown
-            self.root.wm_state('iconic')
-        """
 
     def pygame_callback(self, event):
         """ docstring """

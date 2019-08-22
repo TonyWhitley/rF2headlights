@@ -36,6 +36,7 @@
   <ItemGroup>
     <Content Include="Documentation\Configurer.JPG" />
     <Content Include="makeexe.bat" />
+    <Content Include="makeexeOLD.bat" />
     <Content Include="pyDirectInputKeySend\.git" />
     <Content Include="pyInstallerSetup.bat" />
     <Content Include="pyRfactor2SharedMemory\.git" />
