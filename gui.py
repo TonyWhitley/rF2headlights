@@ -10,6 +10,7 @@ from tkinter import ttk
 import tkinter.font as font
 import sys
 
+sys.path.append('rF2headlights')
 from configIni import Config
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
@@ -93,11 +94,11 @@ class Tab:
         global tk_event  # pylint: disable=global-statement
         tk_event = _event
 
-    def __init__(self, parentFrame, _root):
+    def __init__(self, parentFrame):
         """ Put this into the parent frame """
-        self.root = _root
+        self.root = parentFrame.master
         self.parentFrame = parentFrame
-        icon(self.root)
+        #icon(self.root)
 
         self.root.bind('<KeyPress>', self.tk_event_callback)
 
@@ -131,7 +132,7 @@ class Tab:
         self.tkButtonSave.grid(column=1, row=4, pady=25)
         #############################
 
-        self.controller_o.run(self.tk_event_callback, parentFrame)
+        #self.controller_o.run(self.tk_event_callback, parentFrame)
 
     def save(self):
         """ docstring """
