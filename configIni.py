@@ -11,8 +11,17 @@ SECTIONS = [
     'rFactor Toggle',
 ]
 MISC_VALUES = {
-    'pit_limiter': '1',  # 1: flash headlights when pit limiter on
-    'pit_lane': '1',     # 1: flash headlights when in pit lane
+    'pit_limiter': '1',         # 1: flash headlights when pit limiter on
+    'pit_lane': '1',            # 1: flash headlights when in pit lane
+    'flash_duration': '20',     # Overtake flash duration
+    'pit_flash_duration': '20', # Pit lane flash duration
+    'default_to_on': '0',       # Headlights on normally, driver can turn them off
+    'on_automatically': '0',    # Headlights on when:
+                    # 0     Driver turns them on
+                    # 1     At least one other driver has them on
+                    # 2     More than one other driver has them on
+                    # 3     At least half of the other drivers have them on
+                    # 4     All the other drivers have them on
 }
 
 
@@ -26,6 +35,8 @@ class Config:
         for _section in SECTIONS:
             self.set(_section, 'Controller', 'Not yet selected')
             self.set(_section, 'Control', '0')
+        self.set('rFactor Toggle', 'Controller', 'keyboard')
+        self.set('rFactor Toggle', 'Control', 'DIK_H')
         for _val, default in MISC_VALUES.items():
             self.set('miscellaneous', _val, default)
 
@@ -35,9 +46,9 @@ class Config:
         else:
             self.write()
             # then configure the controller(s)
-            from gui import main
+            from gui import gui_main
 
-            main()
+            gui_main()
             self.config.read(CONFIG_FILE_NAME)
 
     def set(self, _section, _val, _value):

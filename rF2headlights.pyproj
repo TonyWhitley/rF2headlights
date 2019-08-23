@@ -34,8 +34,9 @@
     <Compile Include="wheel.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="makeConfigurer.bat" />
+    <Content Include="Documentation\Configurer.JPG" />
     <Content Include="makeexe.bat" />
+    <Content Include="makeexeOLD.bat" />
     <Content Include="pyDirectInputKeySend\.git" />
     <Content Include="pyInstallerSetup.bat" />
     <Content Include="pyRfactor2SharedMemory\.git" />
@@ -44,6 +45,7 @@
     <Content Include="resources\headlight.png" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Documentation\" />
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="resources\" />
@@ -53,15 +55,6 @@
       <Id>env</Id>
       <Version>3.6</Version>
       <Description>env (Python 3.6 (64-bit))</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
-    <Interpreter Include="monkeytype\">
-      <Id>monkeytype</Id>
-      <Version>3.6</Version>
-      <Description>monkeytype (Python 3.6 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
