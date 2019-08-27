@@ -41,7 +41,7 @@ class Config:
             self.set('miscellaneous', _val, default)
 
         # if there is an existing file parse values over those
-        if os.path.exists(CONFIG_FILE_NAME):
+        if os.path.isfile(CONFIG_FILE_NAME):
             self.config.read(CONFIG_FILE_NAME)
         else:
             self.write()
