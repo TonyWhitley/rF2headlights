@@ -56,6 +56,9 @@ def main():
     while True:
         _cmd = _o_run.running()
         if headlightFlash_o.player_is_driving():
+            if headlightFlash_o.esc_check():
+                continue
+
             if not _player_is_driving:
                 # First time player takes control
                 _player_is_driving = True
@@ -97,6 +100,7 @@ class HeadlightControl:
     _flashing = False
     _count = 0
     timer = None
+    _timestamp = 0
     _info = sharedMemoryAPI.SimInfoAPI()
 
     def __init__(self) -> None:
@@ -202,6 +206,19 @@ class HeadlightControl:
             if _on:
                 self.on()
 
+    def esc_check(self) -> bool:
+        """
+        If mElapsedTime is not changing then player has pressed Esc
+        or rFactor does not have focus
+        """
+        if not self._info.isOnTrack() or \
+            self._timestamp < self._info.playersVehicleTelemetry().mElapsedTime:
+            self.escape_pressed = False
+        else:
+            self.escape_pressed = True
+        self._timestamp = self._info.playersVehicleTelemetry().mElapsedTime
+        return self.escape_pressed
+
     def toggle(self) -> None:
         """
         Now this program is controlling the headlights a replacement
@@ -221,14 +238,19 @@ class HeadlightControl:
             if self._info.isTrackLoaded():
                 if self._info.isOnTrack():
                     if self.__ignition_is_on():
-                        if not stopping_callback():
-                            self._flashing = True
-                            self.toggle()
-                            __flashTimer = SetTimer(self.timer,
-                                                    self.__toggle,
-                                                    _args=[stopping_callback])
-                            # type: ignore
-                            return
+                        if not self.escape_pressed:
+                            if not stopping_callback():
+                                self._flashing = True
+                                self.toggle()
+                                __flashTimer = SetTimer(self.timer,
+                                                        self.__toggle,
+                                                        _args=[stopping_callback])
+                                # type: ignore
+                                return
+                        else:
+                            status_poker_fn('Esc pressed')
+                    else:
+                        status_poker_fn('Engine not running')
                 else:
                     status_poker_fn('Not on track')
             else:

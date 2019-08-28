@@ -25,6 +25,7 @@
   <ItemGroup>
     <Compile Include="configIni.py" />
     <Compile Include="gui.py" />
+    <Compile Include="makeVersionText.py" />
     <Compile Include="pyDirectInputKeySend\directInputKeySend.py" />
     <Compile Include="pyDirectInputKeySend\__init__.py" />
     <Compile Include="pyRfactor2SharedMemory\rF2data.py" />

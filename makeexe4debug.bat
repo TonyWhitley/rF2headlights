@@ -1,6 +1,6 @@
 @echo off
 
-call pyInstallerSetup env
+REM call pyInstallerSetup env
 
 ::   --debug=imports
 ::  --clean
@@ -11,13 +11,12 @@ rem --icon doesn't seem to do anything
 rem --noconsole removes the console in the background but for now
 rem             it's best to keep it for error messages
 pyinstaller ^
-  --onefile ^
-  --distpath . ^
+  --distpath debug ^
+  --hidden-import psutil ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
-  --noconsole  ^
   "%~dp0\rF2headlights.py "
 
-if exist version.txt pyi-set_version version.txt rF2headlights.exe
+REM if exist version.txt pyi-set_version version.txt rF2headlights.exe
 pause
 

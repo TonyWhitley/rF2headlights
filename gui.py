@@ -663,7 +663,7 @@ def gui_main():
         root, width=1200, height=1200, relief='sunken', borderwidth=5)
     tabConfigureFlash.grid()
 
-    __o_tab = Tab(tabConfigureFlash, _root)
+    __o_tab = Tab(tabConfigureFlash)
     return _root, tabConfigureFlash
 
 
