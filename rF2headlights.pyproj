@@ -39,6 +39,7 @@
   <ItemGroup>
     <Content Include="Documentation\Configurer.JPG" />
     <Content Include="makeexe.bat" />
+    <Content Include="makeexe4debug.bat" />
     <Content Include="makeexeOLD.bat" />
     <Content Include="pyDirectInputKeySend\.git" />
     <Content Include="pyInstallerSetup.bat" />

@@ -45,10 +45,6 @@ class Config:
             self.config.read(CONFIG_FILE_NAME)
         else:
             self.write()
-            # then configure the controller(s)
-            from gui import gui_main
-
-            gui_main()
             self.config.read(CONFIG_FILE_NAME)
 
     def set(self, _section, _val, _value):

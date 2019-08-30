@@ -26,19 +26,25 @@ if not exist env\scripts	python.exe -m venv env && env/Scripts/activate && pytho
 ::  --clean 
 ::  --paths env\Lib\site-packages 
 ::  --hidden-import pygame.base 
-::  --onefile 
 
-rem --icon doesn't seem to do anything
-rem --noconsole removes the console in the background but for now
-rem             it's best to keep it for error messages
 pyinstaller ^
   --onefile ^
   --distpath debug ^
   --paths env\lib\site-packages ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
+  --name rF2headlightsDEBUG ^
+  "%~dp0\rF2headlights.py "
+
+pyinstaller ^
+  --onefile ^
+  --distpath debug ^
+  --paths env\lib\site-packages ^
+  --add-data resources\headlight.ico;. ^
+  --icon resources\headlight.ico ^
+  --name rF2headlightsDEBUG ^
   --debug=all ^
-  --name=rf2headlightsDEBUG ^
-  "%~dp0\rf2headlights.py "
+  "%~dp0\rF2headlights.py "
+
 pause
 
