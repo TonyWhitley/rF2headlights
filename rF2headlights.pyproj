@@ -33,6 +33,8 @@
     <Compile Include="pyRfactor2SharedMemory\__init__.py" />
     <Compile Include="rF2headlights.py" />
     <Compile Include="wheel.py" />
+    <Compile Include="WindowsVersionFile\WindowsVersionFile.py" />
+    <Compile Include="WindowsVersionFile\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Configurer.JPG" />
@@ -44,12 +46,19 @@
     <Content Include="requirements.txt" />
     <Content Include="resources\headlight.ico" />
     <Content Include="resources\headlight.png" />
+    <Content Include="version.txt" />
+    <Content Include="WindowsVersionFile\.git" />
+    <Content Include="WindowsVersionFile\.gitattributes" />
+    <Content Include="WindowsVersionFile\.gitignore" />
+    <Content Include="WindowsVersionFile\WindowsVersionFile.pyproj" />
+    <Content Include="WindowsVersionFile\WindowsVersionFile.sln" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="resources\" />
+    <Folder Include="WindowsVersionFile\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">

@@ -4,3 +4,6 @@
 [submodule "pyRfactor2SharedMemory"]
 	path = pyRfactor2SharedMemory
 	url = https://github.com/TonyWhitley/pyRfactor2SharedMemory
+[submodule "WindowsVersionFile"]
+	path = WindowsVersionFile
+	url = https://github.com/TonyWhitley/WindowsVersionFile

@@ -33,9 +33,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 40  # The git commit count
+BUILD_REVISION = 48  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
-versionDate = '2019-08-22'
+versionDate = '2019-08-30'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -90,7 +90,6 @@ rfactor_headlight_control = {
 TIMER_EVENT = 'TIMER_EVENT'
 
 tk_event = None
-root = None
 
 def icon(_root):
     """ Use our icon """
@@ -112,7 +111,6 @@ class Tab:
     parentFrame = None
     controller_o = Controller()
     config_o = Config()
-    root = None
     xyPadding = 10
 
     def __tk_event_callback(self, _event):    # pylint: disable=no-self-use
@@ -209,7 +207,6 @@ class ControlFrame(Tab):
                  parentFrame,
                  frame_name,
                  _headlight_controls):
-        global root  # pylint: disable=global-statement
 
         self.parentFrame = parentFrame
         self.headlight_controls = _headlight_controls
@@ -521,8 +518,9 @@ class rFactorStatusFrame(ControlFrame):
                          'rFactor Status',
                          {})
         self.parentFrame = parentFrame
-        self.vars = {}
-        self._tkCheckbuttons = {}
+        self.vars = dict()
+        self._tkCheckbuttons = dict()
+        self._leds = dict()
         self._timestamp = 0
         self.xPadding = 10
         self.rFactor_running = False
@@ -538,16 +536,23 @@ class rFactorStatusFrame(ControlFrame):
             tkFrame_Status,
             text='rF2 running',
             justify='l',
-            #indicatoron=0,
+            state=tk.DISABLED,
+            disabledforeground='black',
+            selectcolor='white',
             variable=self.vars['rF2 running'])
-        self._tkCheckbuttons['rF2 running'].grid(sticky='w')
+        self._tkCheckbuttons['rF2 running'].grid(row=0, column=0, sticky='w')
+
+        self._leds['rF2 running'] = self.Led(tkFrame_Status)
+        self._leds['rF2 running'].grid(row=0, column=1, sticky='ns')
+        self._leds['rF2 running'].set_colour('red')
 
         self.__createBoolVar('Shared memory working', False)
         self._tkCheckbuttons['Shared memory working'] = \
             tk.Checkbutton(tkFrame_Status,
                            text='Shared memory\nworking',
                            justify='l',
-                           #indicatoron=0,
+                           state=tk.DISABLED,
+                           disabledforeground='black',
                            variable=self.vars['Shared memory working'])
         self._tkCheckbuttons['Shared memory working'].grid(sticky='w')
 
@@ -555,6 +560,8 @@ class rFactorStatusFrame(ControlFrame):
         self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(
             tkFrame_Status,
             text='Track loaded',
+            state=tk.DISABLED,
+            disabledforeground='black',
             variable=self.vars['Track loaded'])
         self._tkCheckbuttons['Track loaded'].grid(sticky='w')
 
@@ -562,6 +569,8 @@ class rFactorStatusFrame(ControlFrame):
         self._tkCheckbuttons['On track'] = tk.Checkbutton(
             tkFrame_Status,
             text='On track',
+            state=tk.DISABLED,
+            disabledforeground='black',
             variable=self.vars['On track'])
         self._tkCheckbuttons['On track'].grid(sticky='w')
 
@@ -569,6 +578,8 @@ class rFactorStatusFrame(ControlFrame):
         self._tkCheckbuttons['Escape pressed'] = tk.Checkbutton(
             tkFrame_Status,
             text='Escape pressed',
+            state=tk.DISABLED,
+            disabledforeground='black',
             variable=self.vars['Escape pressed'])
         self._tkCheckbuttons['Escape pressed'].grid(sticky='w')
 
@@ -576,6 +587,8 @@ class rFactorStatusFrame(ControlFrame):
         self._tkCheckbuttons['AI driving'] = tk.Checkbutton(
             tkFrame_Status,
             text='AI driving',
+            state=tk.DISABLED,
+            disabledforeground='black',
             variable=self.vars['AI driving'])
         self._tkCheckbuttons['AI driving'].grid(sticky='w')
 
@@ -588,6 +601,8 @@ class rFactorStatusFrame(ControlFrame):
                           sticky='e'
                           )
         self.driverLabel = tk.Entry(tkFrame_Status,
+                                    state=tk.DISABLED,
+                                    disabledforeground='black',
                                     textvariable=self.vars['Player'])
         self.driverLabel.grid(column=2,
                               row=_row,
@@ -619,6 +634,7 @@ class rFactorStatusFrame(ControlFrame):
         if self.info.isRF2running():
             callback_time = 200
             self.vars['rF2 running'].set(True)
+            self._leds['rF2 running'].set_colour('green')
             if not self.rFactor_running:
                 if self.info.isSharedMemoryAvailable():
                     self.statusText.insert(tk.END, 'rFactor 2 running\n')
@@ -628,6 +644,7 @@ class rFactorStatusFrame(ControlFrame):
 		    # Checking whether rFactor has started running is
 		    # slow so don't check so frequently.
             callback_time = 2000
+            self._leds['rF2 running'].set_colour('')
             if self.rFactor_running:
                 self.statusText.insert(tk.END, 'rFactor 2 exited\n')
                 self.rFactor_running = False
@@ -655,12 +672,29 @@ class rFactorStatusFrame(ControlFrame):
         self.vars[name] = tk.BooleanVar(name=name)
         self.vars[name].set(value)
 
+    class Led:
+        """ Display a LED in any colour you fancy """
+        def __init__(self, parent_frame):
+            return
+            self.canvas = tk.Canvas(parent_frame, height=15, width=20)
+            self.led = self.canvas.create_oval(5,5,15,15)
+        def set_colour(self, colour):
+            """ Set the colour, e.g 'red'. '' is transparent """
+            return
+            self.canvas.itemconfig(
+                self.led,
+                fill=colour)
+        def grid(self, **args):
+            """ Pass on the tk grid() args """
+            return
+            self.canvas.grid(args)
+
 def gui_main():
     """ Run the tab as a standalone frame """
     _root = tk.Tk()
     _root.title('%s' % (versionStr))
     tabConfigureFlash = ttk.Frame(
-        root, width=1200, height=1200, relief='sunken', borderwidth=5)
+        _root, width=1200, height=1200, relief='sunken', borderwidth=5)
     tabConfigureFlash.grid()
 
     __o_tab = Tab(tabConfigureFlash)
@@ -671,7 +705,6 @@ class Run:
     """ The external interface """
     controller_o = Controller()
     config_o = Config()
-    root = None
     xyPadding = 10
     pygame_event = None
 
@@ -691,7 +724,7 @@ class Run:
                 _keyboard_control = True
                 break
         if _keyboard_control:
-            root.bind('<KeyPress>', self.tk_event_callback)
+            self.root.bind('<KeyPress>', self.tk_event_callback)
 
     def pygame_callback(self, event):
         """ docstring """
@@ -737,13 +770,6 @@ class Run:
 
 def run(_root, tabConfigureFlash):
     """ docstring """
-    """
-    _root = tk.Tk()
-    _root.title('%s' % (versionStr))
-    runWindow = ttk.Frame(root, width=200, height=200,
-                          relief='sunken', borderwidth=5)
-    runWindow.grid()
-    """
     runWindow = tabConfigureFlash
     _o_run = Run(runWindow, _root)
     return _o_run

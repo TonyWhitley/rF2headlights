@@ -1,8 +1,8 @@
 
-import WindowsVersionFile
+from WindowsVersionFile.WindowsVersionFile import fill_in_version_file_template
 
 result = fill_in_version_file_template(
-  filevers = (0, 4, 40, 1),
+  filevers = (0, 4, 48, 1),
   prodvers = (0, 4, 0, 0),
   datetime = 0,
   CompanyName = 'Seven Smiles :)',

@@ -35,5 +35,12 @@ pyinstaller ^
   --icon resources\headlight.ico ^
   --noconsole  ^
   "%~dp0\rF2headlights.py "
+
+if not exist version.txt goto :pause
+echo Setting version properties in rF2headlights.exe to version.txt
+echo on
+pyi-set_version version.txt rF2headlights.exe
+
+:pause
 pause
 
