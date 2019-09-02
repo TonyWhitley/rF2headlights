@@ -33,9 +33,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 48  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls V0.4.%d' % BUILD_REVISION
-versionDate = '2019-08-30'
+BUILD_REVISION = 50  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls V0.5.%d' % BUILD_REVISION
+versionDate = '2019-09-02'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -126,7 +126,7 @@ class Tab:
         self.parentFrame = parentFrame
         #icon(self.root)
 
-        self.root.bind('<KeyPress>', self.__tk_event_callback)
+        self.root.bind('<KeyPress>', self.controller_o.tk_event_callback)
 
         #############################
         # Three sub-frames
@@ -282,18 +282,23 @@ class ControlFrame(Tab):
             # Run pygame and tk to get latest input
             controller_o.pygame_tk_check(
                 self.pygame_callback, self.parentFrame)
-            if tk_event:
-                dik = KeycodeToDIK(tk_event.keycode)
-                self.headlight_controls[name]['svControl'].set(dik)
-                #if dik.startswith('DIK_'):
-                #    dik = dik[len('DIK_'):]
-                self.headlight_controls[name]['tkLabel'].configure(text=dik)
-                self.headlight_controls[name]['ControllerName'].configure(
-                    text=KEYBOARD)
-                self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
-                return tk_event.char
             if self.pygame_event:
-                if not isinstance(self.pygame_event, str):
+                if isinstance(self.pygame_event, str):
+                    if self.pygame_event == 'TIMER_EVENT':
+                        continue
+                    else:   # 'QUIT'
+                        break
+                if self.pygame_event.type == 2: # pygame.KEYDOWN
+                    dik = KeycodeToDIK(self.pygame_event.keycode)
+                    self.headlight_controls[name]['svControl'].set(dik)
+                    #if dik.startswith('DIK_'):
+                    #    dik = dik[len('DIK_'):]
+                    self.headlight_controls[name]['tkLabel'].configure(text=dik)
+                    self.headlight_controls[name]['ControllerName'].configure(
+                        text=KEYBOARD)
+                    self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
+                    return self.pygame_event.char
+                else:
                     if name != 'rFactor Toggle':
                         # The control sent to rFactor must be a key
                         _button = self.pygame_event.button
@@ -662,6 +667,7 @@ class rFactorStatusFrame(ControlFrame):
 
         self.vars['AI driving'].set(self.info.isOnTrack() and \
             self.info.isAiDriving())
+        #self.parentFrame.update()
         self.parentFrame.after(callback_time, self.__tick)
 
     def __createVar(self, name, value):
@@ -724,7 +730,7 @@ class Run:
                 _keyboard_control = True
                 break
         if _keyboard_control:
-            self.root.bind('<KeyPress>', self.tk_event_callback)
+            pass #self.root.bind('<KeyPress>', self.tk_event_callback)
 
     def pygame_callback(self, event):
         """ docstring """

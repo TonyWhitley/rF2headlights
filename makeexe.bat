@@ -1,6 +1,7 @@
 @echo off
-
-call pyInstallerSetup env
+setlocal
+set _env=env
+call pyInstallerSetup %_env%
 
 ::   --debug=imports
 ::  --clean
@@ -15,8 +16,10 @@ pyinstaller ^
   --distpath . ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
-  --noconsole  ^
-  "%~dp0\rF2headlights.py "
+  --paths %_env%\Lib\site-packages ^
+  --paths %_env% ^
+  --debug all  ^
+  "%~dp0\rF2headlights.py"
 
 if exist version.txt pyi-set_version version.txt rF2headlights.exe
 pause

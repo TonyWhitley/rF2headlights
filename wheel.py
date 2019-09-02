@@ -2,6 +2,7 @@
 
 import locale
 import sys
+import time
 import pygame
 
 """
@@ -67,6 +68,12 @@ class Controller:
         """
         pygame.time.set_timer(pygame.USEREVENT+1, 1000) # Every second
 
+    def stop_pit_check_timer(self):
+        """
+        Stop the one second timer
+        """
+        pygame.time.set_timer(pygame.USEREVENT+1, 0)
+
     def select_controller(self, controller_name):
         """ docstring """
         self.controller = pygame.joystick.Joystick(0)  # fallback value
@@ -102,31 +109,41 @@ class Controller:
 
     def pygame_tk_check(self, callback, tk_main_dialog=None):
         """ Run pygame and tk to get latest events """
-        for event in pygame.event.get():  # User did something
-            if event.type == pygame.QUIT:  # If user clicked close
-                callback('QUIT')
-            # Possible controller actions: JOYAXISMOTION JOYBALLMOTION
-            #                              JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
-            if event.type == pygame.JOYAXISMOTION:
-                # ignore callback(event)
-                pass
-            if event.type == pygame.JOYBUTTONDOWN:
-                callback(event)
-            if event.type == pygame.JOYBUTTONUP:
-                # ignore callback(event)
-                pass
-            if event.type == pygame.KEYDOWN:
-                callback(event)
-            if event.type == pygame.USEREVENT+1:
-                callback('TIMER_EVENT')
-        if tk_main_dialog:  # Tk is running as well
-            try:
-                tk_main_dialog.update()
-            except: # pylint: disable=bare-except
-                # tk_main_dialog has been destroyed.
-                pygame.event.post(
-                    pygame.event.Event(pygame.QUIT))
-        return True
+        while True:
+            for event in pygame.event.get():  # User did something
+                if event.type == pygame.QUIT:  # If user clicked close
+                    callback('QUIT')
+                # Possible controller actions: JOYAXISMOTION JOYBALLMOTION
+                #                              JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
+                if event.type == pygame.JOYAXISMOTION:
+                    # ignore callback(event)
+                    pass
+                if event.type == pygame.JOYBUTTONDOWN:
+                    callback(event)
+                if event.type == pygame.JOYBUTTONUP:
+                    # ignore callback(event)
+                    pass
+                if event.type == pygame.KEYDOWN:
+                    callback(event)
+                if event.type == pygame.USEREVENT+1:
+                    callback('TIMER_EVENT')
+                return  # event happened
+            time.sleep(0.02)
+            if tk_main_dialog:  # Tk is running as well
+                try:
+                    tk_main_dialog.update()
+                except: # pylint: disable=bare-except
+                    # tk_main_dialog has been destroyed.
+                    pygame.event.post(
+                        pygame.event.Event(pygame.QUIT))
+                    return
+
+    def tk_event_callback(self, event):
+        _ev = pygame.event.Event(pygame.KEYDOWN,
+                                 keycode=event.keycode,
+                                 char=event.char)
+        pygame.event.post(_ev)
+
 
     def run(self, callback, tk_main_dialog=None):
         """ Run pygame and tk event loops """

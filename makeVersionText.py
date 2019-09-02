@@ -2,8 +2,8 @@
 from WindowsVersionFile.WindowsVersionFile import fill_in_version_file_template
 
 result = fill_in_version_file_template(
-  filevers = (0, 4, 48, 1),
-  prodvers = (0, 4, 0, 0),
+  filevers = (0, 5, 50, 1),
+  prodvers = (0, 5, 0, 0),
   datetime = 0,
   CompanyName = 'Seven Smiles :)',
   FileDescription = 'rFactor 2 Headlights Control',

@@ -52,7 +52,9 @@ def main():
     _root, tabConfigureFlash = gui_main()
     _player_is_driving = False
     _o_run = run(_root, tabConfigureFlash)
-    _o_run.controller_o.start_pit_check_timer() # Start the 1 second timer
+    # Start the 1 second timer
+    _o_run.controller_o.start_pit_check_timer()
+    # side effect is it generates an event which makes running() return
     while True:
         _cmd = _o_run.running()
         if headlightFlash_o.player_is_driving():
@@ -86,6 +88,8 @@ def main():
                 headlightFlash_o.automatic_headlights(on_automatically())
         else:
             _player_is_driving = False
+            #_o_run.controller_o.stop_pit_check_timer()
+            # It then needs restarting, which is tricky
         if _cmd == 'QUIT':
             break
 
