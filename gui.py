@@ -33,9 +33,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 50  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls V0.5.%d' % BUILD_REVISION
-versionDate = '2019-09-02'
+BUILD_REVISION = 54  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls V0.6.%d' % BUILD_REVISION
+versionDate = '2019-09-24'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -646,8 +646,8 @@ class rFactorStatusFrame(ControlFrame):
                     self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
                     self.rFactor_running = True
         else:
-		    # Checking whether rFactor has started running is
-		    # slow so don't check so frequently.
+        # Checking whether rFactor has started running is
+        # slow so don't check so frequently.
             callback_time = 2000
             self._leds['rF2 running'].set_colour('')
             if self.rFactor_running:

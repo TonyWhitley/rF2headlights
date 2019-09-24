@@ -7,8 +7,8 @@ VSVersionInfo(
   ffi=FixedFileInfo(
     # filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)
     # Set not needed items to zero 0.
-    filevers=(0, 5, 50, 1),
-    prodvers=(0, 5, 0, 0),
+    filevers=(0, 6, 54, 0),
+    prodvers=(0, 6, 0, 0),
     # Contains a bitmask that specifies the valid bits 'flags'r
     mask=0x17,
     # Contains a bitmask that specifies the Boolean attributes of the file.
@@ -32,13 +32,14 @@ VSVersionInfo(
         u'040904b0',
         [StringStruct(u'CompanyName', u'Seven Smiles :)'),
         StringStruct(u'FileDescription', u'rFactor 2 Headlights Control'),
-        StringStruct(u'FileVersion', u'0.5.50.1'),
+        StringStruct(u'FileVersion', u'0.6.54.0'),
         StringStruct(u'InternalName', u'rFactor 2 Headlight Control'),
         StringStruct(u'LegalCopyright', u'(c) 2019 Tony Whitley. All rights reserved.'),
         StringStruct(u'OriginalFilename', u'rF2headlights.exe'),
         StringStruct(u'ProductName', u'rF2headlights'),
-        StringStruct(u'ProductVersion', u'0.5.0.0')])
+        StringStruct(u'ProductVersion', u'0.6.0.0')])
       ]),
     VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
   ]
 )
+
