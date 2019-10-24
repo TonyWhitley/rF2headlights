@@ -34,7 +34,7 @@ def status_poker_fn(string) -> None:
         pass
 
 BUILD_REVISION = 54  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls V0.6.%d' % BUILD_REVISION
+versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
 versionDate = '2019-09-24'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
@@ -160,7 +160,7 @@ class Tab:
             self.parentFrame)
         self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=0,
                                                                          row=1,
-                                                                         sticky='new',
+                                                                         sticky='nsew',
                                                                          padx=self.xyPadding,
                                                                          rowspan=1)
 
@@ -176,8 +176,9 @@ class Tab:
             background='green',
             font=buttonFont,
             command=self.save)
-        self.tkButtonSave.grid(column=1,
-                               row=1,
+        self.tkButtonSave.grid(column=0,
+                               row=2,
+                               columnspan=2,
                                pady=25,
                                sticky='s')
         #############################
@@ -393,45 +394,87 @@ class headlightOptionsFrame(ControlFrame):
 
         ##########################################################
         _row = 9
-        tkLabel_flash_duration = tk.Label(self.tkFrame_headlight_control,
-                                          text='Overtake flash duration')
-        tkLabel_flash_duration.grid(sticky='se',
+        tkLabel_flash_on_time = tk.Label(self.tkFrame_headlight_control,
+                                          text='Overtake flash ON time')
+        tkLabel_flash_on_time.grid(sticky='se',
                                     column=0,
                                     row=_row)
-        self.tkSlider_flash_duration = tk.Scale(self.tkFrame_headlight_control,
+        self.tkSlider_flash_on_time = tk.Scale(self.tkFrame_headlight_control,
                                                 from_=10,
                                                 to=500,
                                                 resolution=10,
                                                 orient=tk.HORIZONTAL)
 
-        self.tkSlider_flash_duration.grid(sticky='w',
+        self.tkSlider_flash_on_time.grid(sticky='w',
                                           column=1,
                                           row=_row)
-        x = self.config_o.get('miscellaneous', 'flash_duration')
+        x = self.config_o.get('miscellaneous', 'flash_on_time')
         if not x:
             x = 10
-        self.tkSlider_flash_duration.set(x)
+        self.tkSlider_flash_on_time.set(x)
 
         ##########################################################
         _row += 1
-        tkLabel_pit_flash_duration = tk.Label(self.tkFrame_headlight_control,
-                                              text='Pit flash duration')
-        tkLabel_pit_flash_duration.grid(sticky='se',
+        tkLabel_flash_off_time = tk.Label(self.tkFrame_headlight_control,
+                                          text='Overtake flash OFF time')
+        tkLabel_flash_off_time.grid(sticky='se',
+                                    column=0,
+                                    row=_row)
+        self.tkSlider_flash_off_time = tk.Scale(self.tkFrame_headlight_control,
+                                                from_=10,
+                                                to=500,
+                                                resolution=10,
+                                                orient=tk.HORIZONTAL)
+
+        self.tkSlider_flash_off_time.grid(sticky='w',
+                                          column=1,
+                                          row=_row)
+        x = self.config_o.get('miscellaneous', 'flash_off_time')
+        if not x:
+            x = 10
+        self.tkSlider_flash_off_time.set(x)
+
+        ##########################################################
+        _row += 1
+        tkLabel_pit_flash_on_time = tk.Label(self.tkFrame_headlight_control,
+                                              text='Pit flash ON time')
+        tkLabel_pit_flash_on_time.grid(sticky='se',
                                         column=0,
                                         row=_row)
-        self.tkSlider_pit_flash_duration = tk.Scale(self.tkFrame_headlight_control,
+        self.tkSlider_pit_flash_on_time = tk.Scale(self.tkFrame_headlight_control,
                                                     from_=10,
                                                     to=500,
                                                     resolution=10,
                                                     orient=tk.HORIZONTAL)
 
-        self.tkSlider_pit_flash_duration.grid(sticky='w',
+        self.tkSlider_pit_flash_on_time.grid(sticky='w',
                                               column=1,
                                               row=_row)
-        x = self.config_o.get('miscellaneous', 'pit_flash_duration')
+        x = self.config_o.get('miscellaneous', 'pit_flash_on_time')
         if not x:
             x = 10
-        self.tkSlider_pit_flash_duration.set(x)
+        self.tkSlider_pit_flash_on_time.set(x)
+
+        ##########################################################
+        _row += 1
+        tkLabel_pit_flash_off_time = tk.Label(self.tkFrame_headlight_control,
+                                              text='Pit flash OFF time')
+        tkLabel_pit_flash_off_time.grid(sticky='se',
+                                        column=0,
+                                        row=_row)
+        self.tkSlider_pit_flash_off_time = tk.Scale(self.tkFrame_headlight_control,
+                                                    from_=10,
+                                                    to=500,
+                                                    resolution=10,
+                                                    orient=tk.HORIZONTAL)
+
+        self.tkSlider_pit_flash_off_time.grid(sticky='w',
+                                              column=1,
+                                              row=_row)
+        x = self.config_o.get('miscellaneous', 'pit_flash_off_time')
+        if not x:
+            x = 10
+        self.tkSlider_pit_flash_off_time.set(x)
 
         ##########################################################
         _separator = ttk.Separator(self.tkFrame_headlight_control,
@@ -495,10 +538,14 @@ class headlightOptionsFrame(ControlFrame):
                           str(self.pit_lane.get()))
         self.config_o.set('miscellaneous', 'default_to_on',
                           str(self.default_to_on.get()))
-        self.config_o.set('miscellaneous', 'flash_duration',
-                          str(self.tkSlider_flash_duration.get()))
-        self.config_o.set('miscellaneous', 'pit_flash_duration',
-                          str(self.tkSlider_pit_flash_duration.get()))
+        self.config_o.set('miscellaneous', 'flash_on_time',
+                          str(self.tkSlider_flash_on_time.get()))
+        self.config_o.set('miscellaneous', 'flash_off_time',
+                          str(self.tkSlider_flash_off_time.get()))
+        self.config_o.set('miscellaneous', 'pit_flash_on_time',
+                          str(self.tkSlider_pit_flash_on_time.get()))
+        self.config_o.set('miscellaneous', 'pit_flash_off_time',
+                          str(self.tkSlider_pit_flash_off_time.get()))
         self.config_o.set('miscellaneous', 'on_automatically',
                           str(self.tkSlider_on_automatically.get()))
         # super().save()  # Parent class handles writing the struct to disc
@@ -615,7 +662,7 @@ class rFactorStatusFrame(ControlFrame):
 
         self.__createVar('Status message', 'Status\nstat2\nstat3')
         self.statusText = tk.Text(tkFrame_Status,
-                                  height=8,
+                                  height=14,
                                   width=20,
                                   wrap=tk.WORD
                                   )
@@ -646,8 +693,8 @@ class rFactorStatusFrame(ControlFrame):
                     self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
                     self.rFactor_running = True
         else:
-        # Checking whether rFactor has started running is
-        # slow so don't check so frequently.
+		    # Checking whether rFactor has started running is
+		    # slow so don't check so frequently.
             callback_time = 2000
             self._leds['rF2 running'].set_colour('')
             if self.rFactor_running:

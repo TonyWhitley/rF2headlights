@@ -41,9 +41,11 @@ def main():
     def pit_lane():
         return config_o.get('miscellaneous', 'pit_lane') == '1'
     def flash_duration():
-        return int(config_o.get('miscellaneous', 'flash_duration'))
+        return (int(config_o.get('miscellaneous', 'flash_on_time')),
+                int(config_o.get('miscellaneous', 'flash_off_time')))
     def pit_flash_duration():
-        return int(config_o.get('miscellaneous', 'pit_flash_duration'))
+        return (int(config_o.get('miscellaneous', 'pit_flash_on_time')),
+                int(config_o.get('miscellaneous', 'pit_flash_off_time')))
     def default_to_on():
         return config_o.get('miscellaneous', 'default_to_on') == '1'
     def on_automatically():
@@ -103,8 +105,9 @@ class HeadlightControl:
     headlightToggleDIK = None
     _flashing = False
     _count = 0
-    timer = None
+    timer = (None,None) # On time, off time
     _timestamp = 0
+    _in_pit_lane = False
     _info = sharedMemoryAPI.SimInfoAPI()
 
     def __init__(self) -> None:
@@ -158,16 +161,26 @@ class HeadlightControl:
         """ Has the car entered the pit lane? """
         if self._info.isOnTrack():
             if not self.__not_in_pit_lane():
-                status_poker_fn('Entered pit lane')
-                self.pit_lane_flashes(pit_flash_duration)
+                if not self._in_pit_lane:
+                    status_poker_fn('Entered pit lane')
+                    self.pit_lane_flashes(pit_flash_duration)
+                    self._in_pit_lane = True
+            else:
+                if self._in_pit_lane:
+                    status_poker_fn('Left pit lane')
+                    self._in_pit_lane = False
+        else:
+            self._in_pit_lane = False
 
     def on(self) -> None:
         """ Turn them on regardless """
+        status_poker_fn('on')
         if not self.are_headlights_on():
             self.toggle()
 
     def off(self) -> None:
         """ Turn them off regardless """
+        status_poker_fn('off')
         if self.are_headlights_on():
             self.toggle()
 
@@ -228,39 +241,65 @@ class HeadlightControl:
         Now this program is controlling the headlights a replacement
         for the headlight control is needed.
         """
+        status_poker_fn('H')
         PressReleaseKey(self.headlightToggleDIK)
 
     def start_flashing(self, stopping_callback) -> None:
         """ Start flashing (if not already) """
         if not self._flashing:
             self.headlightState = self.are_headlights_on()
-            self.__toggle(stopping_callback)
+            if self.headlightState:
+                self.__toggle_off(stopping_callback)
+            else:
+                self.__toggle_on(stopping_callback)
 
-    def __toggle(self, stopping_callback) -> None:
-        """ Toggle the headlights unless it's time to stop """
+    def headlight_control_is_live(self) -> bool:
+	    """ Player is driving the car, headlight control is active """
         if self._info.isSharedMemoryAvailable():
             if self._info.isTrackLoaded():
                 if self._info.isOnTrack():
-                    if self.__ignition_is_on():
-                        if not self.escape_pressed:
-                            if not stopping_callback():
-                                self._flashing = True
-                                self.toggle()
-                                __flashTimer = SetTimer(self.timer,
-                                                        self.__toggle,
-                                                        _args=[stopping_callback])
-                                # type: ignore
-                                return
-                        else:
-                            status_poker_fn('Esc pressed')
+                    if not self.escape_pressed:
+                        return True
                     else:
-                        status_poker_fn('Engine not running')
+                        status_poker_fn('Esc pressed')
                 else:
                     status_poker_fn('Not on track')
             else:
                 status_poker_fn('Track not loaded')
         else:
             status_poker_fn('rFactor 2 not running')
+        return False
+
+    def __toggle_on(self, stopping_callback) -> None:
+        """ Toggle the headlights on unless it's time to stop """
+        if self.headlight_control_is_live():
+            if self.__ignition_is_on():
+                self.on()
+                if not stopping_callback():
+                    self._flashing = True
+                    __flashTimer = SetTimer(self.timer[0],
+                                            self.__toggle_off,
+                                            _args=[stopping_callback])
+                    # type: ignore
+                    return
+            else:
+                status_poker_fn('Engine not running')
+        self.stop_flashing()
+
+    def __toggle_off(self, stopping_callback) -> None:
+        """ Toggle the headlights of unless it's time to stop """
+        if self.headlight_control_is_live():
+            if self.__ignition_is_on():
+                self.off()
+                if not stopping_callback():
+                    self._flashing = True
+                    __flashTimer = SetTimer(self.timer[1],
+                                            self.__toggle_on,
+                                            _args=[stopping_callback])
+                    # type: ignore
+                    return
+                else:
+                    status_poker_fn('Engine not running')
         self.stop_flashing()
 
     def stop_flashing(self):
@@ -277,7 +316,8 @@ class HeadlightControl:
 
     def __not_in_pit_lane(self) -> bool:
         """ Used to stop when not in the pit lane """
-        return not self._info.playersVehicleScoring().mInPits
+        res = not self._info.playersVehicleScoring().mInPits
+        return res
 
     def __pit_limiter_is_off(self) -> bool:
         """ Used to stop when the pit limiter is off """

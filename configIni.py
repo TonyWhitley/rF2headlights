@@ -14,7 +14,11 @@ MISC_VALUES = {
     'pit_limiter': '1',         # 1: flash headlights when pit limiter on
     'pit_lane': '1',            # 1: flash headlights when in pit lane
     'flash_duration': '20',     # Overtake flash duration
+    'flash_on_time': '20',      # Overtake lane flash on time
+    'flash_off_time': '20',     # Overtake lane flash off time
     'pit_flash_duration': '20', # Pit lane flash duration
+    'pit_flash_on_time': '200', # Pit lane flash on time
+    'pit_flash_off_time': '200',# Pit lane flash off time
     'default_to_on': '0',       # Headlights on normally, driver can turn them off
     'on_automatically': '0',    # Headlights on when:
                     # 0     Driver turns them on
@@ -22,6 +26,7 @@ MISC_VALUES = {
                     # 2     More than one other driver has them on
                     # 3     At least half of the other drivers have them on
                     # 4     All the other drivers have them on
+    'controller_file' : '%ProgramFiles(x86)%/Steam/steamapps/common/rFactor 2/Userdata/player/controller.json',
 }
 
 
@@ -29,7 +34,7 @@ class Config:
     """ docstring """
     def __init__(self):
         # instantiate
-        self.config = ConfigParser()
+        self.config = ConfigParser(interpolation=None)
 
         # set default values
         for _section in SECTIONS:
@@ -62,7 +67,11 @@ class Config:
             # No such section in file
             self.set(_section, _val, '')
             return None
-
+    def get_controller_file(self):
+        # Special case - expand the path
+        return os.path.normpath(
+            os.path.expandvars(
+                self.config.get('miscellaneous', 'controller_file')))
     def write(self):
         """ save to a file """
         with open(CONFIG_FILE_NAME, 'w') as configfile:
@@ -70,6 +79,7 @@ class Config:
 
 
 if __name__ == "__main__":
+    # Test
     _CONFIG_O = Config()
     SECTION = 'headlight controls'
     VAL = 'controller'

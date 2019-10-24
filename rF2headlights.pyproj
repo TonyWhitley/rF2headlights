@@ -13,6 +13,9 @@
     <Name>rF2headlights</Name>
     <RootNamespace>rF2flash</RootNamespace>
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <TestFramework>unittest</TestFramework>
+    <UnitTestPattern>test*.py</UnitTestPattern>
+    <UnitTestRootDirectory>tests</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,7 +34,13 @@
     <Compile Include="pyRfactor2SharedMemory\rF2data.py" />
     <Compile Include="pyRfactor2SharedMemory\sharedMemoryAPI.py" />
     <Compile Include="pyRfactor2SharedMemory\__init__.py" />
+    <Compile Include="readJSONfile.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="rF2headlights.py" />
+    <Compile Include="tests\test_headlights.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="wheel.py" />
     <Compile Include="WindowsVersionFile\WindowsVersionFile.py" />
     <Compile Include="WindowsVersionFile\__init__.py" />
@@ -56,6 +65,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
+    <Folder Include="docs\" />
+    <Folder Include="tests\" />
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="resources\" />
