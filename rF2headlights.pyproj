@@ -15,7 +15,8 @@
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>test*.py</UnitTestPattern>
-    <UnitTestRootDirectory>tests</UnitTestRootDirectory>
+    <UnitTestRootDirectory>
+    </UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +42,7 @@
     <Compile Include="tests\test_headlights.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="tests\__init__.py" />
     <Compile Include="wheel.py" />
     <Compile Include="WindowsVersionFile\WindowsVersionFile.py" />
     <Compile Include="WindowsVersionFile\__init__.py" />

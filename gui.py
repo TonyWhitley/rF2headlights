@@ -30,12 +30,16 @@ def status_poker_fn(string) -> None:
     try:
         status_poker(tk.END, string+'\n')
         status_poker_scroll(tk.END)
+    except RuntimeError:
+        # "main thread is not in main loop" whatever that means
+        # print(string)
+        pass
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 54  # The git commit count
+BUILD_REVISION = 57  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2019-09-24'
+versionDate = '2019-10-30'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -390,7 +394,7 @@ class headlightOptionsFrame(ControlFrame):
         x = self.config_o.get('miscellaneous', 'default_to_on')
         if not x:
             x = 0
-        self.pit_lane.set(x)
+        self.default_to_on.set(x)
 
         ##########################################################
         _row = 9
@@ -705,6 +709,7 @@ class rFactorStatusFrame(ControlFrame):
         self.vars['Track loaded'].set(self.info.isTrackLoaded())
         self.vars['On track'].set(self.info.isOnTrack())
         self.vars['Player'].set(self.info.driverName())
+        # This duplicates the test HeadlightControl.esc_check()
         if not self.info.isOnTrack() or \
             self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
             self.vars['Escape pressed'].set(False)
