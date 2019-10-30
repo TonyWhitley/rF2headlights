@@ -11,7 +11,8 @@ from threading import Timer
 import time
 
 from configIni import Config
-from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, PressReleaseKey
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, \
+    PressReleaseKey
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 

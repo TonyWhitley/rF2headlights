@@ -13,8 +13,9 @@ import sys
 sys.path.append('rF2headlights')
 from configIni import Config
 from wheel import Controller
-from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK
+from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK, rfKeycodeToDIK
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
+from readJSONfile import Json
 
 # pylint: disable=global-statement
 # pylint: disable=global-at-module-level
@@ -37,7 +38,7 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 57  # The git commit count
+BUILD_REVISION = 58  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
 versionDate = '2019-10-30'
 
@@ -202,7 +203,6 @@ class Tab:
         """ Set the settings for this tab """
         pass    # pylint: disable=unnecessary-pass
 
-
 class ControlFrame(Tab):
     """ Generic frame with a list of controls """
     tkFrame_headlight_control = None
@@ -345,8 +345,32 @@ class rFactorHeadlightControlFrame(ControlFrame):
                          rfactor_headlight_control)
         ##########################################################
         ttk.Label(self.tkFrame_headlight_control,
-                  text='Must be a keyboard key\n').\
+                  text='Controller.json keycode must match.  It is:'\
+                  ).grid(row=3, columnspan=2, sticky='e')
+
+        tk.Label(self.tkFrame_headlight_control,
+                  text=self.get_headlight_control(),
+                  fg='SystemInactiveCaptionText',
+                  relief=tk.GROOVE,
+                  borderwidth=4,
+                  anchor='e',
+                  padx=4
+                  ).grid(row=3, column=2)
+
+        ttk.Label(self.tkFrame_headlight_control,
+                  text='(Must be a keyboard key)').\
             grid()
+
+    def get_headlight_control(self):
+        """
+        Get the keycode specified in controller.json
+        """
+        _controller_file = super().config_o.get_controller_file()
+        _JSON_O = Json(_controller_file)
+        headlight_control = _JSON_O.get_item("Control - Headlights")
+        keycode = rfKeycodeToDIK(headlight_control[1])
+        return keycode
+
 
 class headlightOptionsFrame(ControlFrame):
     """
