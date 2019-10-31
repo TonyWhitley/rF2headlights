@@ -13,10 +13,8 @@ SECTIONS = [
 MISC_VALUES = {
     'pit_limiter': '1',         # 1: flash headlights when pit limiter on
     'pit_lane': '1',            # 1: flash headlights when in pit lane
-    'flash_duration': '20',     # Overtake flash duration
     'flash_on_time': '20',      # Overtake lane flash on time
     'flash_off_time': '20',     # Overtake lane flash off time
-    'pit_flash_duration': '20', # Pit lane flash duration
     'pit_flash_on_time': '200', # Pit lane flash on time
     'pit_flash_off_time': '200',# Pit lane flash off time
     'default_to_on': '0',       # Headlights on normally, driver can turn them off

@@ -8,9 +8,13 @@ call pyInstallerSetup %_env%
 ::  --paths env\Lib\site-packages
 ::  --hidden-import pygame.base
 
+
+rem  --exclude-module tests ^
+rem  --exclude-module WindowsVersionFile ^
 rem --icon doesn't seem to do anything
 rem --noconsole removes the console in the background but for now
 rem             it's best to keep it for error messages
+
 pyinstaller ^
   --onefile ^
   --distpath . ^

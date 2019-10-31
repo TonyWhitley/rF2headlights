@@ -29,8 +29,9 @@ def SetTimer(mS, callback, _args=None) -> Timer:
             print(mS)
             time.sleep(mS/1000)
             callback(_args[0])
+            timer = None
         else:
-            status_poker_fn(str(mS))
+            # NO!!! Causes a LONG delay status_poker_fn(str(mS))
             timer = Timer(mS / 1000, callback, args=_args)
             timer.start()
     else:
@@ -290,36 +291,34 @@ class HeadlightControl:
                 status_poker_fn('Track not loaded')
         else:
             status_poker_fn('rFactor 2 not running')
+        self._in_pit_lane = False
         return False
 
     def __toggle_on(self, stopping_callback) -> None:
         """ Toggle the headlights on unless it's time to stop """
-        if self.__ignition_is_on():
-            self.on()
-            if not stopping_callback():
-                self._flashing = True
-                __flashTimer = SetTimer(self.timer[0],
-                                        self.__toggle_off,
-                                        _args=[stopping_callback])
-                # type: ignore
-                return
-        else:
-            status_poker_fn('Engine not running')
+        if self.headlight_control_is_live() and not stopping_callback():
+            self._flashing = True
+            if self.__ignition_is_on():
+                self.on()
+            else:
+                status_poker_fn('Engine not running')
+            __flashTimer = SetTimer(self.timer[0],
+                                    self.__toggle_off,
+                                    _args=[stopping_callback])
+            # type: ignore
+            return
         self.stop_flashing()
 
     def __toggle_off(self, stopping_callback) -> None:
-        """ Toggle the headlights of unless it's time to stop """
-        if self.__ignition_is_on():
+        """ Toggle the headlights off unless it's time to stop """
+        if self.headlight_control_is_live() and not stopping_callback():
+            self._flashing = True
             self.off()
-            if not stopping_callback():
-                self._flashing = True
-                __flashTimer = SetTimer(self.timer[1],
-                                        self.__toggle_on,
-                                        _args=[stopping_callback])
-                # type: ignore
-                return
-        else:
-            status_poker_fn('Engine not running')
+            __flashTimer = SetTimer(self.timer[1],
+                                    self.__toggle_on,
+                                    _args=[stopping_callback])
+            # type: ignore
+            return
         self.stop_flashing()
 
     def stop_flashing(self):

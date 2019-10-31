@@ -29,6 +29,8 @@
   <ItemGroup>
     <Compile Include="configIni.py" />
     <Compile Include="gui.py" />
+    <Compile Include="lib\tkToolTip.py" />
+    <Compile Include="lib\__init__.py" />
     <Compile Include="makeVersionText.py" />
     <Compile Include="pyDirectInputKeySend\directInputKeySend.py" />
     <Compile Include="pyDirectInputKeySend\__init__.py" />
@@ -68,6 +70,7 @@
   <ItemGroup>
     <Folder Include="Documentation\" />
     <Folder Include="docs\" />
+    <Folder Include="lib\" />
     <Folder Include="tests\" />
     <Folder Include="pyDirectInputKeySend\" />
     <Folder Include="pyRfactor2SharedMemory\" />

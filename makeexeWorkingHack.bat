@@ -31,6 +31,8 @@ pyinstaller ^
   --onefile ^
   --distpath . ^
   --paths env\lib\site-packages ^
+  --exclude-module tests ^
+  --exclude-module WindowsVersionFile ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
   --noconsole  ^

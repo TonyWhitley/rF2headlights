@@ -16,6 +16,7 @@ from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK, rfKeycodeToDIK
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from readJSONfile import Json
+from lib.tkToolTip import Tooltip as Tooltip
 
 # pylint: disable=global-statement
 # pylint: disable=global-at-module-level
@@ -33,14 +34,14 @@ def status_poker_fn(string) -> None:
         status_poker_scroll(tk.END)
     except RuntimeError:
         # "main thread is not in main loop" whatever that means
-        # print(string)
+        print(string)
         pass
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 58  # The git commit count
+BUILD_REVISION = 59  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2019-10-30'
+versionDate = '2019-10-31'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -344,22 +345,25 @@ class rFactorHeadlightControlFrame(ControlFrame):
                          'rFactor Headlight Control',
                          rfactor_headlight_control)
         ##########################################################
-        ttk.Label(self.tkFrame_headlight_control,
-                  text='Controller.json keycode must match.  It is:'\
-                  ).grid(row=3, columnspan=2, sticky='e')
+        _match_label = ttk.Label(self.tkFrame_headlight_control,
+                                 text='Controller.json keycode must match, it is:')
+        _match_label.grid(row=3, columnspan=2, sticky='e')
+        Tooltip(_match_label, text='Note: only written when rFactor exits')
 
-        tk.Label(self.tkFrame_headlight_control,
-                  text=self.get_headlight_control(),
-                  fg='SystemInactiveCaptionText',
-                  relief=tk.GROOVE,
-                  borderwidth=4,
-                  anchor='e',
-                  padx=4
-                  ).grid(row=3, column=2)
+        _key_label = tk.Label(self.tkFrame_headlight_control,
+                              text=self.get_headlight_control(),
+                              fg='SystemInactiveCaptionText',
+                              relief=tk.GROOVE,
+                              borderwidth=4,
+                              anchor='e',
+                              padx=4)
+        _key_label.grid(row=3, column=2)
+        Tooltip(_key_label, text='Note: only written when rFactor exits')
 
-        ttk.Label(self.tkFrame_headlight_control,
-                  text='(Must be a keyboard key)').\
-            grid()
+        Tooltip(rfactor_headlight_control['rFactor Toggle']['ControllerName'],
+        text='Must be a keyboard key')
+        Tooltip(rfactor_headlight_control['rFactor Toggle']['tkButton'],
+        text='Must be a keyboard key')
 
     def get_headlight_control(self):
         """
