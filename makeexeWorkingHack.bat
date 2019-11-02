@@ -43,6 +43,21 @@ echo Setting version properties in rF2headlights.exe to version.txt
 echo on
 pyi-set_version version.txt rF2headlights.exe
 
+echo Now to make debug version
+pause
+
+pyinstaller ^
+  --onefile ^
+  --distpath debug ^
+  --paths env\lib\site-packages ^
+  --exclude-module tests ^
+  --exclude-module WindowsVersionFile ^
+  --add-data resources\headlight.ico;. ^
+  --icon resources\headlight.ico ^
+  --debug=all  ^
+  --name rF2headlightsDEBUG ^
+  "%~dp0\rF2headlights.py "
+
 :pause
 pause
 

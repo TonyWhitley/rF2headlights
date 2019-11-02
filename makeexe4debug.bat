@@ -31,9 +31,11 @@ pyinstaller ^
   --onefile ^
   --distpath debug ^
   --paths env\lib\site-packages ^
+  --exclude-module tests ^
+  --exclude-module WindowsVersionFile ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
-  --name rF2headlightsDEBUG ^
+  --name rF2headlights ^
   "%~dp0\rF2headlights.py "
 
 if not exist version.txt goto :pause
@@ -45,6 +47,8 @@ pyinstaller ^
   --onefile ^
   --distpath debug ^
   --paths env\lib\site-packages ^
+  --exclude-module tests ^
+  --exclude-module WindowsVersionFile ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
   --name rF2headlightsDEBUG ^

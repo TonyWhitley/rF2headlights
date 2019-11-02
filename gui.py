@@ -7,11 +7,12 @@ Set values in headlightControls.ini to configure headlight controls
 from os import path
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import tkinter.font as font
 import sys
 
 sys.path.append('rF2headlights')
-from configIni import Config
+from configIni import Config, CONFIG_FILE_NAME
 from wheel import Controller
 from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK, rfKeycodeToDIK
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
@@ -39,9 +40,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 59  # The git commit count
+BUILD_REVISION = 60  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2019-10-31'
+versionDate = '2019-11-02'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -365,15 +366,23 @@ class rFactorHeadlightControlFrame(ControlFrame):
         Tooltip(rfactor_headlight_control['rFactor Toggle']['tkButton'],
         text='Must be a keyboard key')
 
-    def get_headlight_control(self):
+    def get_headlight_control(self, _controller_file_test=None):
         """
         Get the keycode specified in controller.json
         """
-        _controller_file = super().config_o.get_controller_file()
+        if _controller_file_test:
+            _controller_file = _controller_file_test
+        else:
+            _controller_file = super().config_o.get_controller_file()
         _JSON_O = Json(_controller_file)
         headlight_control = _JSON_O.get_item("Control - Headlights")
-        keycode = rfKeycodeToDIK(headlight_control[1])
-        return keycode
+        if headlight_control:
+            keycode = rfKeycodeToDIK(headlight_control[1])
+            return keycode
+        err = F'"Control - Headlights" not in {_controller_file}\n'\
+            F'See {CONFIG_FILE_NAME} "controller_file" entry'.format()
+        messagebox.showinfo('Config error', err)
+        return ''
 
 
 class headlightOptionsFrame(ControlFrame):

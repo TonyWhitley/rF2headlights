@@ -1,9 +1,11 @@
 import unittest
 from unittest import mock
 
+import tkinter as tk
+
 import rF2headlights
 from pyDirectInputKeySend.directInputKeySend import PressReleaseKey
-from gui import status_poker_fn
+from gui import status_poker_fn, rFactorHeadlightControlFrame
 
 def mock_status_poker_fn(str):
     print(str)
@@ -31,10 +33,12 @@ class Test_test_headlights(unittest.TestCase):
         msg = self.headlightFlash_o._info.versionCheck()
         assert self.headlightFlash_o._info.sharedMemoryVerified, msg
     def test_pit_limiter_flashes(self):
+        """
         self.headlightFlash_o._info.playersVehicleTelemetry().mSpeedLimiter = 1
         #rF2headlights.SetTimer(4000, self.SpeedLimiterOff)
         pit_flash_duration = (100,20)
         self.headlightFlash_o.pit_limiter_flashes(pit_flash_duration)
+        """
     def SpeedLimiterOff(self):
         """ Timer callback """
         self.headlightFlash_o._info.playersVehicleTelemetry().mSpeedLimiter = 0
@@ -49,5 +53,14 @@ class Test_test_config(unittest.TestCase):
             int(config_o.get('miscellaneous', 'pit_flash_off_time')))
 
         print(on_time, off_time)
+
+class Test_test_gui(unittest.TestCase):
+    def test_1(self):
+        root = tk.Tk()
+        frame = rFactorHeadlightControlFrame(root)
+        frame.get_headlight_control('nosuchfile')
+        root.destroy()
+        pass
+
 if __name__ == '__main__':
     unittest.main()
