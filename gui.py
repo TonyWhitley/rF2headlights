@@ -40,9 +40,9 @@ def status_poker_fn(string) -> None:
     except: # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 60  # The git commit count
+BUILD_REVISION = 61  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2019-11-02'
+versionDate = '2019-11-03'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \

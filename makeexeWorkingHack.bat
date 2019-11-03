@@ -1,4 +1,4 @@
-@echo off
+::@echo off
 setlocal
 
 goto not37
@@ -11,8 +11,8 @@ pause
 goto :eof
 
 :not37
-set path=c:\Python36;c:\Python36\scripts;%path%
-set path=%path%;"C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
+rem set path=c:\Python36;c:\Python36\scripts;%path%
+rem set path=%path%;"C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
 
 pyinstaller -v
 @echo.
@@ -37,6 +37,8 @@ pyinstaller ^
   --icon resources\headlight.ico ^
   --noconsole  ^
   "%~dp0\rF2headlights.py "
+  
+pause
 
 if not exist version.txt goto :pause
 echo Setting version properties in rF2headlights.exe to version.txt

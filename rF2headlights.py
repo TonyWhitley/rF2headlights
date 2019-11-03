@@ -368,5 +368,23 @@ class HeadlightControl:
         self.headlightToggleDIK = 'DIK_H'
         self._info.playersVehicleTelemetry().mSpeedLimiter = 1
 
+def debug() -> None:
+    """
+    Print out start up debug information if this is a debug .exe
+    """
+    if 'DEBUG' in sys.executable: # rF2headlightsDEBUG.exe
+        from configIni import CONFIG_FILE_NAME
+        from readJSONfile import read_file
+        conf_file = os.path.abspath(CONFIG_FILE_NAME)
+        try:
+            conf = read_file(conf_file)
+        except:
+            print(F'Could not read "{conf_file}" "{CONFIG_FILE_NAME}"')
+            return
+        print(F'\n"{conf_file}" contents:\n')
+        print(conf)
+        print(F'\n"{conf_file}" contents end\n')
+
 if __name__ == "__main__":
+    debug()
     main()
