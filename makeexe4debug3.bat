@@ -33,14 +33,24 @@ pyinstaller ^
   --paths env\lib\site-packages ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
-  --debug=all ^
+  --debug=all  ^
   --name rF2headlightsDEBUG ^
+  "%~dp0\rF2headlights.py "
+
+pause Regular version
+pyinstaller ^
+  --onefile ^
+  --paths env\lib\site-packages ^
+  --add-data resources\headlight.ico;. ^
+  --icon resources\headlight.ico ^
+  --noconsole  ^
+  --name rF2headlights ^
   "%~dp0\rF2headlights.py "
 
 if not exist version.txt goto :pause
 echo Setting version properties in rF2headlights.exe to version.txt
 echo on
-pyi-set_version version.txt debug\rF2headlightsDEBUG.exe
+pyi-set_version version.txt rF2headlights.exe
 
 :pause
 pause

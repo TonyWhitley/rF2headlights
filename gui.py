@@ -4,6 +4,12 @@ Set values in headlightControls.ini to configure headlight controls
 # pylint: disable=invalid-name
 
 # Python 3
+from lib.tkToolTip import Tooltip as Tooltip
+from readJSONfile import Json
+import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
+from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK, rfKeycodeToDIK
+from wheel import Controller
+from configIni import Config, CONFIG_FILE_NAME
 from os import path
 import tkinter as tk
 from tkinter import ttk
@@ -12,18 +18,13 @@ import tkinter.font as font
 import sys
 
 sys.path.append('rF2headlights')
-from configIni import Config, CONFIG_FILE_NAME
-from wheel import Controller
-from pyDirectInputKeySend.directInputKeySend import KeycodeToDIK, rfKeycodeToDIK
-import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
-from readJSONfile import Json
-from lib.tkToolTip import Tooltip as Tooltip
 
 # pylint: disable=global-statement
 # pylint: disable=global-at-module-level
 # pylint: disable=global-variable-undefined
-global status_poker # Function pointer to poke text into status window
+global status_poker  # Function pointer to poke text into status window
 global status_poker_scroll
+
 
 def status_poker_fn(string) -> None:
     """
@@ -31,18 +32,19 @@ def status_poker_fn(string) -> None:
     Poke text into rFactorStatusFrame class's text widget
     """
     try:
-        status_poker(tk.END, string+'\n')
+        status_poker(tk.END, string + '\n')
         status_poker_scroll(tk.END)
     except RuntimeError:
         # "main thread is not in main loop" whatever that means
         print(string)
         pass
-    except: # pylint: disable=bare-except
+    except BaseException:  # pylint: disable=bare-except
         pass
 
-BUILD_REVISION = 61  # The git commit count
+
+BUILD_REVISION = 63  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2019-11-03'
+versionDate = '2020-01-02'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -98,11 +100,12 @@ TIMER_EVENT = 'TIMER_EVENT'
 
 tk_event = None
 
+
 def icon(_root):
     """ Use our icon """
     if getattr(sys, 'frozen', False):
         # running in a PyInstaller bundle (exe)
-        _p = path.join(sys._MEIPASS, 'headlight.ico')
+        _p = path.join(sys._MEIPASS, 'headlight.ico')  #pylint: disable=protected-access
         _root.iconbitmap(_p)
     else:
         # running live
@@ -131,7 +134,7 @@ class Tab:
         """ Put this into the parent frame """
         self.root = parentFrame.master
         self.parentFrame = parentFrame
-        #icon(self.root)
+        # icon(self.root)
 
         self.root.bind('<KeyPress>', self.controller_o.tk_event_callback)
 
@@ -140,36 +143,23 @@ class Tab:
 
         self.headlight_controls_frame_o = headlightControlsFrame(
             self.parentFrame)
-        self.headlight_controls_frame_o.tkFrame_headlight_control.grid(column=0,
-                                                                       row=0,
-                                                                       sticky='new',
-                                                                       padx=self.xyPadding,
-                                                                       rowspan=1)
+        self.headlight_controls_frame_o.tkFrame_headlight_control.grid(
+            column=0, row=0, sticky='new', padx=self.xyPadding, rowspan=1)
 
         self.headlightOptionsFrame_o = headlightOptionsFrame(
             self.parentFrame)
-        self.headlightOptionsFrame_o.tkFrame_headlight_control.grid(column=1,
-                                                                    row=0,
-                                                                    sticky='new',
-                                                                    padx=self.xyPadding,
-                                                                    rowspan=2)
-
+        self.headlightOptionsFrame_o.tkFrame_headlight_control.grid(
+            column=1, row=0, sticky='new', padx=self.xyPadding, rowspan=2)
 
         self.rFactorStatusFrame_o = rFactorStatusFrame(
             self.parentFrame)
-        self.rFactorStatusFrame_o.tkFrame_headlight_control.grid(column=2,
-                                                                 row=0,
-                                                                 sticky='new',
-                                                                 padx=self.xyPadding,
-                                                                 rowspan=3)
+        self.rFactorStatusFrame_o.tkFrame_headlight_control.grid(
+            column=2, row=0, sticky='new', padx=self.xyPadding, rowspan=3)
 
         self.rf_headlight_control_frame_o = rFactorHeadlightControlFrame(
             self.parentFrame)
-        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(column=0,
-                                                                         row=1,
-                                                                         sticky='nsew',
-                                                                         padx=self.xyPadding,
-                                                                         rowspan=1)
+        self.rf_headlight_control_frame_o.tkFrame_headlight_control.grid(
+            column=0, row=1, sticky='nsew', padx=self.xyPadding, rowspan=1)
 
         #############################
         # And a "Save configuration" button
@@ -205,6 +195,7 @@ class Tab:
         """ Set the settings for this tab """
         pass    # pylint: disable=unnecessary-pass
 
+
 class ControlFrame(Tab):
     """ Generic frame with a list of controls """
     tkFrame_headlight_control = None
@@ -230,17 +221,20 @@ class ControlFrame(Tab):
                      text="Control").grid(row=0, column=2)
 
         ##########################################################
-        for _control_num, (name, control) in enumerate(self.headlight_controls.items()):
+        for _control_num, (name, control) in enumerate(
+                self.headlight_controls.items()):
             # (temp var to simplify and shorten the following lines)
             _control_line = self.headlight_controls[name]
             ##########################################################
-            _control_line['tkButton'] = tk.Button(self.tkFrame_headlight_control,
-                                                  text='Select ' + name,
-                                                  width=20,
-                                                  command=lambda n=name,
-                                                  w=super().controller_o:
-                                                  self.set_control(n, w))
-            _control_line['tkButton'].grid(row=_control_num+2,
+            _control_line['tkButton'] = tk.Button(
+                self.tkFrame_headlight_control,
+                text='Select ' + name,
+                width=20,
+                command=lambda n=name,
+                w=super().controller_o: self.set_control(
+                    n,
+                    w))
+            _control_line['tkButton'].grid(row=_control_num + 2,
                                            sticky='w',
                                            pady=3)
             ##########################################################
@@ -255,24 +249,25 @@ class ControlFrame(Tab):
                          borderwidth=4,
                          anchor='e',
                          padx=4)
-            _control_line['ControllerName'].grid(row=_control_num+2,
+            _control_line['ControllerName'].grid(row=_control_num + 2,
                                                  column=1,
                                                  sticky='e')
             ##########################################################
             _control_line['svControl'] = tk.StringVar()
             __control = super().config_o.get(name, 'Control')
-            #if __control.startswith('DIK_'):
+            # if __control.startswith('DIK_'):
             #    __control = __control[len('DIK_'):]
             _control_line['svControl'].set(
                 __control)
-            _control_line['tkLabel'] = tk.Label(self.tkFrame_headlight_control,
-                                                textvariable=control['svControl'],
-                                                fg='SystemInactiveCaptionText',
-                                                relief=tk.GROOVE,
-                                                borderwidth=4,
-                                                anchor='e',
-                                                padx=4)
-            _control_line['tkLabel'].grid(row=_control_num+2,
+            _control_line['tkLabel'] = tk.Label(
+                self.tkFrame_headlight_control,
+                textvariable=control['svControl'],
+                fg='SystemInactiveCaptionText',
+                relief=tk.GROOVE,
+                borderwidth=4,
+                anchor='e',
+                padx=4)
+            _control_line['tkLabel'].grid(row=_control_num + 2,
                                           column=2,
                                           sticky='w')
 
@@ -285,7 +280,7 @@ class ControlFrame(Tab):
         global tk_event  # pylint: disable=global-statement
         tk_event = None
         self.pygame_event = None
-        while 1:
+        while True:
             # Run pygame and tk to get latest input
             controller_o.pygame_tk_check(
                 self.pygame_callback, self.parentFrame)
@@ -295,15 +290,17 @@ class ControlFrame(Tab):
                         continue
                     else:   # 'QUIT'
                         break
-                if self.pygame_event.type == 2: # pygame.KEYDOWN
+                if self.pygame_event.type == 2:  # pygame.KEYDOWN
                     dik = KeycodeToDIK(self.pygame_event.keycode)
                     self.headlight_controls[name]['svControl'].set(dik)
-                    #if dik.startswith('DIK_'):
+                    # if dik.startswith('DIK_'):
                     #    dik = dik[len('DIK_'):]
-                    self.headlight_controls[name]['tkLabel'].configure(text=dik)
+                    self.headlight_controls[name]['tkLabel'].configure(
+                        text=dik)
                     self.headlight_controls[name]['ControllerName'].configure(
                         text=KEYBOARD)
-                    self.headlight_controls[name]['svControllerName'].set(KEYBOARD)
+                    self.headlight_controls[name]['svControllerName'].set(
+                        KEYBOARD)
                     return self.pygame_event.char
                 else:
                     if name != 'rFactor Toggle':
@@ -315,7 +312,8 @@ class ControlFrame(Tab):
                             text=str(_button))
                         self.headlight_controls[name]['ControllerName'].configure(
                             text=_joy)
-                        self.headlight_controls[name]['svControllerName'].set(_joy)
+                        self.headlight_controls[name]['svControllerName'].set(
+                            _joy)
                         return _button
 
     def save(self):
@@ -326,28 +324,33 @@ class ControlFrame(Tab):
             self.config_o.set(name, 'Control', control['svControl'].get())
         # super().save()  # Parent class handles writing the struct to disc
 
+
 class headlightControlsFrame(ControlFrame):
     """
     Frame for specifying the controls used by this program to select
     flashing the headlights etc.
     """
+
     def __init__(self, parentFrame):
         super().__init__(parentFrame,
                          'Player Headlight Controls',
                          headlight_controls)
+
 
 class rFactorHeadlightControlFrame(ControlFrame):
     """
     Frame for selecting the control that operates the headlight toggle
     Must be a keyboard key
     """
+
     def __init__(self, parentFrame):
         super().__init__(parentFrame,
                          'rFactor Headlight Control',
                          rfactor_headlight_control)
         ##########################################################
-        _match_label = ttk.Label(self.tkFrame_headlight_control,
-                                 text='Controller.json keycode must match, it is:')
+        _match_label = ttk.Label(
+            self.tkFrame_headlight_control,
+            text='Controller.json keycode must match, it is:')
         _match_label.grid(row=3, columnspan=2, sticky='e')
         Tooltip(_match_label, text='Note: only written when rFactor exits')
 
@@ -362,9 +365,9 @@ class rFactorHeadlightControlFrame(ControlFrame):
         Tooltip(_key_label, text='Note: only written when rFactor exits')
 
         Tooltip(rfactor_headlight_control['rFactor Toggle']['ControllerName'],
-        text='Must be a keyboard key')
+                text='Must be a keyboard key')
         Tooltip(rfactor_headlight_control['rFactor Toggle']['tkButton'],
-        text='Must be a keyboard key')
+                text='Must be a keyboard key')
 
     def get_headlight_control(self, _controller_file_test=None):
         """
@@ -390,15 +393,17 @@ class headlightOptionsFrame(ControlFrame):
     Frame for selecting the pit limiter / pit lane flash options
     and the automatic turning on of the headlights
     """
+
     def __init__(self, parentFrame):
         super().__init__(parentFrame,
                          'Headlight Options',
                          _headlight_controls={})
 
         self.pit_limiter = tk.IntVar()
-        tkCheckbutton_pitLimiter = tk.Checkbutton(self.tkFrame_headlight_control,
-                                                  var=self.pit_limiter,
-                                                  text='Flash when pit limiter on')
+        tkCheckbutton_pitLimiter = tk.Checkbutton(
+            self.tkFrame_headlight_control,
+            var=self.pit_limiter,
+            text='Flash when pit limiter on')
 
         tkCheckbutton_pitLimiter.grid(sticky='w',
                                       columnspan=2)
@@ -436,19 +441,19 @@ class headlightOptionsFrame(ControlFrame):
         ##########################################################
         _row = 9
         tkLabel_flash_on_time = tk.Label(self.tkFrame_headlight_control,
-                                          text='Overtake flash ON time')
+                                         text='Overtake flash ON time')
         tkLabel_flash_on_time.grid(sticky='se',
-                                    column=0,
-                                    row=_row)
+                                   column=0,
+                                   row=_row)
         self.tkSlider_flash_on_time = tk.Scale(self.tkFrame_headlight_control,
-                                                from_=10,
-                                                to=500,
-                                                resolution=10,
-                                                orient=tk.HORIZONTAL)
+                                               from_=10,
+                                               to=500,
+                                               resolution=10,
+                                               orient=tk.HORIZONTAL)
 
         self.tkSlider_flash_on_time.grid(sticky='w',
-                                          column=1,
-                                          row=_row)
+                                         column=1,
+                                         row=_row)
         x = self.config_o.get('miscellaneous', 'flash_on_time')
         if not x:
             x = 10
@@ -478,19 +483,20 @@ class headlightOptionsFrame(ControlFrame):
         ##########################################################
         _row += 1
         tkLabel_pit_flash_on_time = tk.Label(self.tkFrame_headlight_control,
-                                              text='Pit flash ON time')
+                                             text='Pit flash ON time')
         tkLabel_pit_flash_on_time.grid(sticky='se',
-                                        column=0,
-                                        row=_row)
-        self.tkSlider_pit_flash_on_time = tk.Scale(self.tkFrame_headlight_control,
-                                                    from_=10,
-                                                    to=500,
-                                                    resolution=10,
-                                                    orient=tk.HORIZONTAL)
+                                       column=0,
+                                       row=_row)
+        self.tkSlider_pit_flash_on_time = tk.Scale(
+            self.tkFrame_headlight_control,
+            from_=10,
+            to=500,
+            resolution=10,
+            orient=tk.HORIZONTAL)
 
         self.tkSlider_pit_flash_on_time.grid(sticky='w',
-                                              column=1,
-                                              row=_row)
+                                             column=1,
+                                             row=_row)
         x = self.config_o.get('miscellaneous', 'pit_flash_on_time')
         if not x:
             x = 10
@@ -503,11 +509,12 @@ class headlightOptionsFrame(ControlFrame):
         tkLabel_pit_flash_off_time.grid(sticky='se',
                                         column=0,
                                         row=_row)
-        self.tkSlider_pit_flash_off_time = tk.Scale(self.tkFrame_headlight_control,
-                                                    from_=10,
-                                                    to=500,
-                                                    resolution=10,
-                                                    orient=tk.HORIZONTAL)
+        self.tkSlider_pit_flash_off_time = tk.Scale(
+            self.tkFrame_headlight_control,
+            from_=10,
+            to=500,
+            resolution=10,
+            orient=tk.HORIZONTAL)
 
         self.tkSlider_pit_flash_off_time.grid(sticky='w',
                                               column=1,
@@ -528,20 +535,21 @@ class headlightOptionsFrame(ControlFrame):
         self.vars = {}
         _name = 'Automatic headlights'
         self.vars[_name] = tk.StringVar(name=_name)
-        #self.vars[_name].set('Fred')
+        # self.vars[_name].set('Fred')
 
         tkLabel_on_automatically = tk.Label(self.tkFrame_headlight_control,
                                             text='Automatic headlights')
         tkLabel_on_automatically.grid(sticky='se',
                                       column=0,
                                       row=_row)
-        self.tkSlider_on_automatically = tk.Scale(self.tkFrame_headlight_control,
-                                                  command=self.__on_automatically_val,
-                                                  showvalue=0,
-                                                  from_=0,
-                                                  to=4,
-                                                  resolution=1,
-                                                  orient=tk.HORIZONTAL)
+        self.tkSlider_on_automatically = tk.Scale(
+            self.tkFrame_headlight_control,
+            command=self.__on_automatically_val,
+            showvalue=0,
+            from_=0,
+            to=4,
+            resolution=1,
+            orient=tk.HORIZONTAL)
 
         self.tkSlider_on_automatically.grid(sticky='w',
                                             column=1,
@@ -552,8 +560,9 @@ class headlightOptionsFrame(ControlFrame):
         self.tkSlider_on_automatically.set(x)
         self.__on_automatically_val(x)
 
-        tkLabel_on_automatically_val = tk.Label(self.tkFrame_headlight_control,
-                                                textvariable=self.vars['Automatic headlights'])
+        tkLabel_on_automatically_val = tk.Label(
+            self.tkFrame_headlight_control,
+            textvariable=self.vars['Automatic headlights'])
         _row += 1
         tkLabel_on_automatically_val.grid(sticky='se',
                                           column=0,
@@ -568,7 +577,7 @@ class headlightOptionsFrame(ControlFrame):
             'More than one other driver has them on',
             'At least half of the other drivers have them on',
             'All the other drivers have them on'
-            ]
+        ]
         self.vars['Automatic headlights'].set(_strings[int(event)])
 
     def save(self):
@@ -591,6 +600,7 @@ class headlightOptionsFrame(ControlFrame):
                           str(self.tkSlider_on_automatically.get()))
         # super().save()  # Parent class handles writing the struct to disc
 
+
 class rFactorStatusFrame(ControlFrame):
     """
     Frame to show rFactor status
@@ -602,6 +612,7 @@ class rFactorStatusFrame(ControlFrame):
     AI driving
     Player name
     """
+
     def __init__(self, parentFrame):
         ####################################################
         # Status frame
@@ -731,32 +742,34 @@ class rFactorStatusFrame(ControlFrame):
             if not self.rFactor_running:
                 if self.info.isSharedMemoryAvailable():
                     self.statusText.insert(tk.END, 'rFactor 2 running\n')
-                    self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
+                    self.statusText.insert(
+                        tk.END, self.info.versionCheck() + '\n')
                     self.rFactor_running = True
         else:
-		    # Checking whether rFactor has started running is
-		    # slow so don't check so frequently.
+                    # Checking whether rFactor has started running is
+                    # slow so don't check so frequently.
             callback_time = 2000
             self._leds['rF2 running'].set_colour('')
             if self.rFactor_running:
                 self.statusText.insert(tk.END, 'rFactor 2 exited\n')
                 self.rFactor_running = False
             self.vars['rF2 running'].set(False)
-        self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
+        self.vars['Shared memory working'].set(
+            self.info.isSharedMemoryAvailable())
         self.vars['Track loaded'].set(self.info.isTrackLoaded())
         self.vars['On track'].set(self.info.isOnTrack())
         self.vars['Player'].set(self.info.driverName())
         # This duplicates the test HeadlightControl.esc_check()
         if not self.info.isOnTrack() or \
-            self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
+                self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
             self.vars['Escape pressed'].set(False)
         else:
             self.vars['Escape pressed'].set(True)
         self._timestamp = self.info.playersVehicleTelemetry().mElapsedTime
 
-        self.vars['AI driving'].set(self.info.isOnTrack() and \
-            self.info.isAiDriving())
-        #self.parentFrame.update()
+        self.vars['AI driving'].set(self.info.isOnTrack() and
+                                    self.info.isAiDriving())
+        # self.parentFrame.update()
         self.parentFrame.after(callback_time, self.__tick)
 
     def __createVar(self, name, value):
@@ -769,20 +782,24 @@ class rFactorStatusFrame(ControlFrame):
 
     class Led:
         """ Display a LED in any colour you fancy """
+
         def __init__(self, parent_frame):
-            return
+            return  #pylint: disable=unreachable
             self.canvas = tk.Canvas(parent_frame, height=15, width=20)
-            self.led = self.canvas.create_oval(5,5,15,15)
+            self.led = self.canvas.create_oval(5, 5, 15, 15)
+
         def set_colour(self, colour):
             """ Set the colour, e.g 'red'. '' is transparent """
             return
             self.canvas.itemconfig(
                 self.led,
                 fill=colour)
+
         def grid(self, **args):
             """ Pass on the tk grid() args """
             return
             self.canvas.grid(args)
+
 
 def gui_main():
     """ Run the tab as a standalone frame """
@@ -819,7 +836,7 @@ class Run:
                 _keyboard_control = True
                 break
         if _keyboard_control:
-            pass #self.root.bind('<KeyPress>', self.tk_event_callback)
+            pass  # self.root.bind('<KeyPress>', self.tk_event_callback)
 
     def pygame_callback(self, event):
         """ docstring """
@@ -857,7 +874,7 @@ class Run:
                         if self.config_o.get(cmd, 'Controller') == _joy:
                             if _button == self.config_o.get(cmd, 'Control'):
                                 return cmd
-                except:  # pylint: disable=bare-except
+                except BaseException:  # pylint: disable=bare-except
                     # not a joystick button
                     pass
                 self.pygame_event = None
@@ -868,6 +885,7 @@ def run(_root, tabConfigureFlash):
     runWindow = tabConfigureFlash
     _o_run = Run(runWindow, _root)
     return _o_run
+
 
 if __name__ == '__main__':
     # To run this tab by itself

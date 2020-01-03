@@ -1,5 +1,5 @@
 import json
-import os
+
 
 def read_file(filepath):
     try:
@@ -7,10 +7,12 @@ def read_file(filepath):
             return f.read()
     except FileNotFoundError:
         pass
-    return None # File not found
+    return None  # File not found
+
 
 class Json:
     dict = dict()
+
     def __init__(self, filepath):
         self.json_str = read_file(filepath)
         if self.json_str:
@@ -20,11 +22,12 @@ class Json:
                 pass
 
     def get_item(self, item_name):
-        for section, items in self.dict.items():
+        for __section, items in self.dict.items():
             if item_name in items:
                 value = items[item_name]
                 return value
         return None
+
 
 if __name__ == "__main__":
     # Test
@@ -41,7 +44,7 @@ if __name__ == "__main__":
         if keycode == rf2headlights_keycode:
             print(F'Match: {keycode}')
         else:
-            print(F"Doesn't match: rF2 keycode {keycode} : rf2headlights keycode {rf2headlights_keycode}")
+            print(
+                F"Doesn't match: rF2 keycode {keycode} : rf2headlights keycode {rf2headlights_keycode}")
     else:
         print(F'"Control - Headlights" not in {_controller_file}')
-

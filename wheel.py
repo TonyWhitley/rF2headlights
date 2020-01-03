@@ -38,9 +38,9 @@ class Controller:
             # print('DEBUG pygame version: %s' % pygame.version.ver)
         except UnicodeError as _e:
             print('Default locale')  # DEBUG
-            print(_e.object.decode(locale.getdefaultlocale()[1]))  # DEBUG
+            print(_e.object.decode(locale.getdefaultlocale()[1]))  # DEBUG  pylint: disable=no-member
             _name = 'Unicode error getting controller name'
-        except: # pylint: disable=bare-except
+        except BaseException:  # pylint: disable=bare-except
             _name = 'Other error getting controller name'
             print("Unexpected error:", sys.exc_info()[0])
         return _name.strip()  # e.g. strip spaces from "usb gamepad   "
@@ -66,13 +66,13 @@ class Controller:
         Start a one second timer to check for pit entry and / or
         pit limiter being turned on
         """
-        pygame.time.set_timer(pygame.USEREVENT+1, 1000) # Every second
+        pygame.time.set_timer(pygame.USEREVENT + 1, 1000)  # Every second
 
     def stop_pit_check_timer(self):
         """
         Stop the one second timer
         """
-        pygame.time.set_timer(pygame.USEREVENT+1, 0)
+        pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
     def select_controller(self, controller_name):
         """ docstring """
@@ -114,7 +114,7 @@ class Controller:
                 if event.type == pygame.QUIT:  # If user clicked close
                     callback('QUIT')
                 # Possible controller actions: JOYAXISMOTION JOYBALLMOTION
-                #                              JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
+                # JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
                 if event.type == pygame.JOYAXISMOTION:
                     # ignore callback(event)
                     pass
@@ -125,14 +125,14 @@ class Controller:
                     pass
                 if event.type == pygame.KEYDOWN:
                     callback(event)
-                if event.type == pygame.USEREVENT+1:
+                if event.type == pygame.USEREVENT + 1:
                     callback('TIMER_EVENT')
                 return  # event happened
             time.sleep(0.02)
             if tk_main_dialog:  # Tk is running as well
                 try:
                     tk_main_dialog.update()
-                except: # pylint: disable=bare-except
+                except BaseException:  # pylint: disable=bare-except
                     # tk_main_dialog has been destroyed.
                     pygame.event.post(
                         pygame.event.Event(pygame.QUIT))
@@ -143,7 +143,6 @@ class Controller:
                                  keycode=event.keycode,
                                  char=event.char)
         pygame.event.post(_ev)
-
 
     def run(self, callback, tk_main_dialog=None):
         """ Run pygame and tk event loops """

@@ -357,3 +357,5 @@ healthchecksdb
 /env1
 /makerFactoryModManager.bat
 /makeexe4debug2.bat
+/dist/headlightControls.ini
+/pylint

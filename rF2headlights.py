@@ -6,6 +6,7 @@ they are in the same state afterwards in case a command was missed.
 """
 # pylint: disable=invalid-name
 
+import os
 import sys
 from threading import Timer
 import time
@@ -19,7 +20,9 @@ from gui import run, gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 global bypass_timer
 bypass_timer = False     # Set for testing, timer calls callback immediately
 
-#################################################################################
+##########################################################################
+
+
 def SetTimer(mS, callback, _args=None) -> Timer:
     """ docstring """
     global bypass_timer
@@ -27,7 +30,7 @@ def SetTimer(mS, callback, _args=None) -> Timer:
     if mS > 0:
         if bypass_timer:
             print(mS)
-            time.sleep(mS/1000)
+            time.sleep(mS / 1000)
             callback(_args[0])
             timer = None
         else:
@@ -37,13 +40,15 @@ def SetTimer(mS, callback, _args=None) -> Timer:
     else:
         pass  # TBD delete timer?
     return timer
-#################################################################################
+##########################################################################
+
+
 def quit_program(errorCode: int) -> None:
     """ User presses a key before exiting program """
     print('\n\nPress Enter to exit')
     input()
     sys.exit(errorCode)
-#################################################################################hhhhh
+# hhhhh
 
 
 def main():
@@ -51,21 +56,27 @@ def main():
     global bypass_timer
 
     headlightFlash_o = HeadlightControl()
-    #headlightFlash_o._fake_status()
+    # headlightFlash_o._fake_status()
     #bypass_timer = True
     config_o = Config()
+
     def pit_limiter():
         return config_o.get('miscellaneous', 'pit_limiter') == '1'
+
     def pit_lane():
         return config_o.get('miscellaneous', 'pit_lane') == '1'
+
     def flash_duration():
         return (int(config_o.get('miscellaneous', 'flash_on_time')),
                 int(config_o.get('miscellaneous', 'flash_off_time')))
+
     def pit_flash_duration():
         return (int(config_o.get('miscellaneous', 'pit_flash_on_time')),
                 int(config_o.get('miscellaneous', 'pit_flash_off_time')))
+
     def default_to_on():
         return config_o.get('miscellaneous', 'default_to_on') == '1'
+
     def on_automatically():
         return int(config_o.get('miscellaneous', 'on_automatically'))
 
@@ -109,7 +120,7 @@ def main():
         else:
             _player_is_driving = False
             headlightFlash_o.stop_flashing()
-            #_o_run.controller_o.stop_pit_check_timer()
+            # _o_run.controller_o.stop_pit_check_timer()
             # It then needs restarting, which is tricky
         if _cmd == 'QUIT':
             break
@@ -124,7 +135,7 @@ class HeadlightControl:
     headlightToggleDIK = None
     _flashing = False
     _count = 0
-    timer = (None,None) # On time, off time
+    timer = (None, None)  # On time, off time
     _timestamp = 0
     _in_pit_lane = False
     _info = sharedMemoryAPI.SimInfoAPI()
@@ -192,13 +203,13 @@ class HeadlightControl:
 
     def on(self) -> None:
         """ Turn them on regardless """
-        #status_poker_fn('on')
+        # status_poker_fn('on')
         if not self.are_headlights_on():
             self.toggle()
 
     def off(self) -> None:
         """ Turn them off regardless """
-        #status_poker_fn('off')
+        # status_poker_fn('off')
         if self.are_headlights_on():
             self.toggle()
 
@@ -231,11 +242,12 @@ class HeadlightControl:
                 _on = True
                 status_poker_fn('More than one other driver has headlights on')
             if on_automatically == 3 and \
-                _num_drivers_with_lights >= (_num_drivers/2):
+                    _num_drivers_with_lights >= (_num_drivers / 2):
                 _on = True
-                status_poker_fn('At least half of the other drivers have headlights on')
+                status_poker_fn(
+                    'At least half of the other drivers have headlights on')
             if on_automatically == 4 and \
-                _num_drivers_with_lights >= _num_drivers:
+                    _num_drivers_with_lights >= _num_drivers:
                 _on = True
                 status_poker_fn('All the other drivers have headlights on')
             if _on:
@@ -249,7 +261,7 @@ class HeadlightControl:
         if self._fake_escape_pressed:
             return False
         if not self._info.isOnTrack() or \
-            self._timestamp < self._info.playersVehicleTelemetry().mElapsedTime:
+                self._timestamp < self._info.playersVehicleTelemetry().mElapsedTime:
             self.escape_pressed = False
         else:
             self.escape_pressed = True
@@ -261,8 +273,8 @@ class HeadlightControl:
         Now this program is controlling the headlights a replacement
         for the headlight control is needed.
         """
-        #status_poker_fn('H')
-        #self._info.playersVehicleTelemetry().mHeadlights = not \
+        # status_poker_fn('H')
+        # self._info.playersVehicleTelemetry().mHeadlights = not \
         #    self._info.playersVehicleTelemetry().mHeadlights
         PressReleaseKey(self.headlightToggleDIK)
 
@@ -368,22 +380,24 @@ class HeadlightControl:
         self.headlightToggleDIK = 'DIK_H'
         self._info.playersVehicleTelemetry().mSpeedLimiter = 1
 
+
 def debug() -> None:
     """
     Print out start up debug information if this is a debug .exe
     """
-    if 'DEBUG' in sys.executable: # rF2headlightsDEBUG.exe
+    if 'DEBUG' in sys.executable:  # rF2headlightsDEBUG.exe
         from configIni import CONFIG_FILE_NAME
         from readJSONfile import read_file
         conf_file = os.path.abspath(CONFIG_FILE_NAME)
         try:
             conf = read_file(conf_file)
-        except:
+        except BaseException:
             print(F'Could not read "{conf_file}" "{CONFIG_FILE_NAME}"')
             return
         print(F'\n"{conf_file}" contents:\n')
         print(conf)
         print(F'\n"{conf_file}" contents end\n')
+
 
 if __name__ == "__main__":
     debug()
