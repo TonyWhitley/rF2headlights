@@ -348,14 +348,12 @@ healthchecksdb
 /rF2headlightsConfigurer.exe
 /rF2headlights.spec
 /rF2headlights.exe
-/envSphinx
-/monkeytype
-/monkeytype.sqlite3
-/env3.7
+
 /rf2headlightsDEBUG.spec
 /rF2headlightsDEBUG.exe
-/env1
 /makerFactoryModManager.bat
 /makeexe4debug2.bat
 /dist/headlightControls.ini
 /pylint
+/lib
+*.pyo
