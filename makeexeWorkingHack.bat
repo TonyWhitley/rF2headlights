@@ -24,6 +24,7 @@ if not exist env\scripts	python.exe -m venv env && env/Scripts/activate && pytho
 ::  --clean
 ::  --paths env\Lib\site-packages
 ::  --hidden-import pygame.base
+::  --hiddenimport pkg_resources.py2_warn   Fixes ModuleNotFoundError: No module named 'pkg_resources.py2_warn'
 
 pyinstaller ^
   --onefile ^
@@ -33,6 +34,7 @@ pyinstaller ^
   --exclude-module WindowsVersionFile ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
+  --hiddenimport pkg_resources.py2_warn ^
   --noconsole  ^
   "%~dp0\rF2headlights.py "
 
@@ -54,9 +56,12 @@ pyinstaller ^
   --exclude-module WindowsVersionFile ^
   --add-data resources\headlight.ico;. ^
   --icon resources\headlight.ico ^
+  --hiddenimport pkg_resources.py2_warn ^
   --debug=all  ^
   --name rF2headlightsDEBUG ^
   "%~dp0\rF2headlights.py "
+copy /y debug\rF2headlightsDEBUG.exe rF2headlightsDEBUG.exe
+pyi-set_version version.txt rF2headlightsDEBUG.exe
 
 :pause
 pause
