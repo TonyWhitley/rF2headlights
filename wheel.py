@@ -127,6 +127,8 @@ class Controller:
                     callback(event)
                 if event.type == pygame.USEREVENT + 1:
                     callback('TIMER_EVENT')
+                else: # debug
+                    print(pygame.event.event_name(event.type))
                 return  # event happened
             time.sleep(0.02)
             if tk_main_dialog:  # Tk is running as well

@@ -42,9 +42,9 @@ def status_poker_fn(string) -> None:
         pass
 
 
-BUILD_REVISION = 64  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2020-01-17'
+BUILD_REVISION = 66  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls V0.8.%d' % BUILD_REVISION
+versionDate = '2020-05-08'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -274,6 +274,7 @@ class ControlFrame(Tab):
     def pygame_callback(self, event):
         """ docstring """
         self.pygame_event = event
+        print(event) # Seems it's not called
 
     def set_control(self, name, controller_o):
         """ Wait for user to press a control """
@@ -841,6 +842,7 @@ class Run:
     def pygame_callback(self, event):
         """ docstring """
         self.pygame_event = event
+        # debug print(event) # This is called
 
     def running(self):
         """ docstring """

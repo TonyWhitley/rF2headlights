@@ -141,6 +141,9 @@ class HeadlightControl:
     _info = sharedMemoryAPI.SimInfoAPI()
     escape_pressed = False
     _fake_escape_pressed = False
+    _car_has_headlights = True # Until we find otherwise
+    tested_car_has_headlights = False
+    car_is_moving = False # Initially
 
     def __init__(self) -> None:
         """ docstring """
@@ -253,6 +256,26 @@ class HeadlightControl:
             if _on:
                 self.on()
 
+    def car_has_headlights(self) -> bool:
+        # Need to retest every time the track is loaded
+        if not self.tested_car_has_headlights:
+            _save = self.are_headlights_on()
+            self.toggle(testing_car_has_headlights=True)
+            if sharedMemoryAPI.Cbytestring2Python(self._info.Rf2Ext.mLastHistoryMessage) == \
+                'Headlights: N/A':
+                self._car_has_headlights = False
+            _car = self._info.vehicleName()
+            if self._car_has_headlights:
+                status_poker_fn(_car + " has headlights")
+            else:
+                status_poker_fn(_car + " has no headlights")
+            self.tested_car_has_headlights = True
+        return self._car_has_headlights
+
+    def car_is_moving(self) -> bool:
+        #return self._info.playersVehicleTelemetry().mLocalVel.x > 1
+        return self._info.playersVehicleTelemetry().mClutchRPM > 10
+
     def esc_check(self) -> bool:
         """
         If mElapsedTime is not changing then player has pressed Esc
@@ -268,7 +291,7 @@ class HeadlightControl:
         self._timestamp = self._info.playersVehicleTelemetry().mElapsedTime
         return self.escape_pressed
 
-    def toggle(self) -> None:
+    def toggle(self, testing_car_has_headlights=False) -> None:
         """
         Now this program is controlling the headlights a replacement
         for the headlight control is needed.
@@ -276,7 +299,8 @@ class HeadlightControl:
         # status_poker_fn('H')
         # self._info.playersVehicleTelemetry().mHeadlights = not \
         #    self._info.playersVehicleTelemetry().mHeadlights
-        PressReleaseKey(self.headlightToggleDIK)
+        if testing_car_has_headlights or self.car_has_headlights():
+            PressReleaseKey(self.headlightToggleDIK)
 
     def start_flashing(self, stopping_callback, flash_timer) -> None:
         """ Start flashing (if not already) """
@@ -311,7 +335,8 @@ class HeadlightControl:
         if self.headlight_control_is_live() and not stopping_callback():
             self._flashing = True
             if self.__ignition_is_on():
-                self.on()
+                if self.car_is_moving():
+                    self.on()
             else:
                 status_poker_fn('Engine not running')
             __flashTimer = SetTimer(self.timer[0],
@@ -344,7 +369,7 @@ class HeadlightControl:
 
     def are_headlights_on(self) -> bool:
         """ Are they on? """
-        return self._info.playersVehicleTelemetry().mHeadlights
+        return self._info.playersVehicleTelemetry().mHeadlights != 0
 
     def __not_in_pit_lane(self) -> bool:
         """ Used to stop when not in the pit lane """
@@ -357,7 +382,7 @@ class HeadlightControl:
 
     def __ignition_is_on(self) -> bool:
         """ Is it on? """
-        return self._info.playersVehicleTelemetry().mIgnitionStarter
+        return self._info.playersVehicleTelemetry().mIgnitionStarter != 0
 
     def flashing(self) -> bool:
         """ Are the headlights being flashed? """
@@ -365,9 +390,12 @@ class HeadlightControl:
 
     def player_is_driving(self) -> bool:
         """ If not there's no point trying to control the headlights """
-        return self._info.versionCheckMsg != '' and \
-            self._info.isTrackLoaded() and \
-            self._info.isOnTrack()
+        if self._info.versionCheckMsg != '' and self._info.isTrackLoaded():
+            if self._info.isOnTrack():
+                return True
+        else:
+            self.tested_car_has_headlights = False
+        return False
 
     def _fake_status(self) -> None:
         for i, ch in enumerate('3.6.0.0'):

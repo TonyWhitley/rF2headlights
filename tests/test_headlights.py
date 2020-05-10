@@ -1,4 +1,5 @@
 from configIni import Config
+import time
 import unittest
 from unittest import mock
 
@@ -6,7 +7,7 @@ import tkinter as tk
 
 import rF2headlights
 from gui import rFactorHeadlightControlFrame
-
+import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 
 def mock_status_poker_fn(_str):
     print(_str)
@@ -25,7 +26,7 @@ class Test_test_headlights(unittest.TestCase):
         self.headlightFlash_o._info.Rf2Ext.mInRealtimeFC = 1
         self.headlightFlash_o._info.playersVehicleTelemetry().mIgnitionStarter = 1
         self.headlightFlash_o.escape_pressed = False
-        self.headlightFlash_o.headlightToggleDIK = 'DIK_H'
+        self.headlightFlash_o.headlightToggleDIK = 'DIK_LCONTROL'
         rF2headlights.bypass_timer = True
 
     def test_null(self):
@@ -45,9 +46,50 @@ class Test_test_headlights(unittest.TestCase):
         self.headlightFlash_o.pit_limiter_flashes(pit_flash_duration)
         """
 
+    def test_Rf2Scor(self):
+        for i in range(10):
+            print('mDisplayedMessageUpdateCapture %s' %
+                  sharedMemoryAPI.Cbytestring2Python(self.headlightFlash_o._info.Rf2Ext.mDisplayedMessageUpdateCapture))
+            # ''
+            print('mLastHistoryMessage %s' %
+                  sharedMemoryAPI.Cbytestring2Python(self.headlightFlash_o._info.Rf2Ext.mLastHistoryMessage))
+            # 'Headlights: On'
+            print('mStatusMessage %s' %
+                  sharedMemoryAPI.Cbytestring2Python(self.headlightFlash_o._info.Rf2Ext.mStatusMessage))
+            # 'On'
+            time.sleep(1)
+
+    def test_car_has_headlights(self):
+        headlights = self.headlightFlash_o.info.car_has_headlights()
+        pass
+
+    def test_917_has_headlights(self):
+        if self.headlightFlash_o._info.vehicleName().startswith("Porsche 917"):
+            for i in range(20):
+                if self.headlightFlash_o._info.isOnTrack():
+                    headlights = self.headlightFlash_o.car_has_headlights()
+                    self.headlightFlash_o.tested_car_has_headlights = False
+
+                    #self.headlightFlash_o.toggle()
+                    self.assertTrue(headlights)
+                time.sleep(1)
+
+    def test_dallara_has_no_headlights(self):
+        if self.headlightFlash_o._info.vehicleName().startswith("Dallara DW12"):
+            for i in range(20):
+                if self.headlightFlash_o._info.isOnTrack():
+                    headlights = self.headlightFlash_o.car_has_headlights()
+                    self.headlightFlash_o.tested_car_has_headlights = False
+                    self.assertFalse(headlights)
+                time.sleep(1)
+    def test_car_is_moving(self):
+        moving = self.headlightFlash_o.car_is_moving()
+        pass
+
     def SpeedLimiterOff(self):
         """ Timer callback """
         self.headlightFlash_o._info.playersVehicleTelemetry().mSpeedLimiter = 0
+
 
 
 class Test_test_config(unittest.TestCase):
