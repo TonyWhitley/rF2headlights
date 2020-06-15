@@ -60,7 +60,7 @@ class Test_test_headlights(unittest.TestCase):
             time.sleep(1)
 
     def test_car_has_headlights(self):
-        headlights = self.headlightFlash_o.info.car_has_headlights()
+        headlights = self.headlightFlash_o.car_has_headlights()
         pass
 
     def test_917_has_headlights(self):

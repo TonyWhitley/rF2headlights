@@ -44,7 +44,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="rF2headlights.py" />
+    <Compile Include="StateMachine.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tests\test_headlights.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="tests\test_StateMachine.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tests\__init__.py" />

@@ -17,6 +17,208 @@ from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, \
 import pyRfactor2SharedMemory.sharedMemoryAPI as sharedMemoryAPI
 from gui import run, gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 
+##############################################################################
+from StateMachine import State
+from StateMachine import StateMachine
+
+class HeadlightsAction:
+    def __init__(self, action):
+        self.action = action
+    def __str__(self): return self.action
+    def __cmp__(self, other):
+        return cmp(self.action, other.action)
+    # Necessary when __cmp__ or __eq__ is defined
+    # in order to make this class usable as a
+    # dictionary key:
+    def __hash__(self):
+        return hash(self.action)
+
+# Static fields; an enumeration of events:
+HeadlightsAction.rfactor_running = HeadlightsAction("rfactor_running")
+HeadlightsAction.rfactor_stopped = HeadlightsAction("rfactor_stopped")
+HeadlightsAction.shared_memory_ok = HeadlightsAction("shared_memory_ok")
+HeadlightsAction.track_loaded = HeadlightsAction("track_loaded")
+HeadlightsAction.track_exited = HeadlightsAction("track_exited")
+HeadlightsAction.car_has_headlights = HeadlightsAction("car_has_headlights")
+HeadlightsAction.car_has_no_headlights = HeadlightsAction("car_has_no_headlights")
+HeadlightsAction.on_track = HeadlightsAction("on_track")
+HeadlightsAction.escape_pressed = HeadlightsAction("escape_pressed")
+HeadlightsAction.ai_driving = HeadlightsAction("ai_driving")
+HeadlightsAction.player_driving = HeadlightsAction("player_driving")
+HeadlightsAction.player_driving_stationary = HeadlightsAction("player_driving_stationary")
+HeadlightsAction.in_pits_car_moving = HeadlightsAction("in_pits_car_moving")
+HeadlightsAction.in_pits_stationary = HeadlightsAction("in_pits_stationary")
+HeadlightsAction.pit_limiter_on_car_moving = HeadlightsAction("pit_limiter_on_car_moving")
+HeadlightsAction.pit_limiter_on_stationary = HeadlightsAction("pit_limiter_on_stationary")
+HeadlightsAction.overtaking_flash = HeadlightsAction("overtaking_flash")
+HeadlightsAction.other_cars_have_headlights_on = HeadlightsAction("other_cars_have_headlights_on")
+HeadlightsAction.headlights_on = HeadlightsAction("headlights_on")
+HeadlightsAction.headlights_off = HeadlightsAction("headlights_off")
+HeadlightsAction.headlights_toggle = HeadlightsAction("headlights_toggle")
+HeadlightsAction.E = HeadlightsAction("E")
+
+# A different subclass for each state:
+
+class HeadlightsState(StateMachine):
+    def __init__(self):
+        # Initial state
+        StateMachine.__init__(self, HeadlightsState.no_rfactor)
+
+class no_rfactor(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.rfactor_running:
+            return HeadlightsState.rfactor_running
+        return HeadlightsState.no_rfactor
+
+class rfactor_running(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.shared_memory_ok:
+            return HeadlightsState.shared_memory
+        return HeadlightsState.rfactor_running
+
+class shared_memory(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.shared_memory
+
+class track_loaded(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.track_loaded
+
+class car_has_headlights(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.car_has_headlights
+
+class on_track(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.on_track
+
+class escape_pressed(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.escape_pressed
+
+class ai_driving(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.ai_driving
+
+class player_driving_headlights_off(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.player_driving_headlights_off
+
+class player_driving_headlights_on(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.player_driving_headlights_on
+
+class player_driving_stationary(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.player_driving_stationary
+
+class in_pits_car_moving(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.in_pits_car_moving
+
+class in_pits_stationary(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.in_pits_stationary
+
+class pit_limiter_on_car_moving(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.pit_limiter_on_car_moving
+
+class pit_limiter_on_stationary(State):
+    def run(self):
+        pass
+
+    def next(self, input):
+        if input == HeadlightsAction.E:
+            return HeadlightsState.X
+        return HeadlightsState.pit_limiter_on_stationary
+
+# State variable initialization:
+HeadlightsState.no_rfactor = no_rfactor()
+HeadlightsState.rfactor_running = rfactor_running()
+HeadlightsState.shared_memory = shared_memory()
+HeadlightsState.track_loaded = track_loaded()
+HeadlightsState.car_has_headlights = car_has_headlights()
+HeadlightsState.on_track = on_track()
+HeadlightsState.escape_pressed = escape_pressed()
+HeadlightsState.ai_driving = ai_driving()
+HeadlightsState.player_driving_headlights_off = player_driving_headlights_off()
+HeadlightsState.player_driving_headlights_on = player_driving_headlights_on()
+HeadlightsState.player_driving_stationary = player_driving_stationary()
+HeadlightsState.in_pits_car_moving = in_pits_car_moving()
+HeadlightsState.in_pits_stationary = in_pits_stationary()
+HeadlightsState.pit_limiter_on_car_moving = pit_limiter_on_car_moving()
+HeadlightsState.pit_limiter_on_stationary = pit_limiter_on_stationary()
+HeadlightsState.X = pit_limiter_on_stationary()
+
+##############################################################################
+
 global bypass_timer
 bypass_timer = False     # Set for testing, timer calls callback immediately
 
@@ -86,6 +288,26 @@ def main():
     # Start the 1 second timer
     _o_run.controller_o.start_pit_check_timer()
     # side effect is it generates an event which makes running() return
+
+    # States
+    """
+    NO_RFACTOR
+    RFACTOR_RUNNING
+    SHARED_MEMORY
+    TRACK_LOADED
+    CAR_HAS_HEADLIGHTS
+    ON_TRACK
+    ESCAPE_PRESSED
+    AI_DRIVING
+    PLAYER_DRIVING_HEADLIGHTS_OFF
+    PLAYER_DRIVING_HEADLIGHTS_ON
+    PLAYER_DRIVING_STATIONARY
+    IN_PITS_CAR_MOVING
+    IN_PITS_STATIONARY
+    PIT_LIMITER_ON_CAR_MOVING
+    PIT_LIMITER_ON_STATIONARY
+    """
+
     while True:
         _cmd = _o_run.running()
         if headlightFlash_o.player_is_driving():
