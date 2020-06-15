@@ -124,7 +124,9 @@ def main():
             # It then needs restarting, which is tricky
         if _cmd == 'QUIT':
             break
-
+    if 'DEBUG' in sys.executable:  # rF2headlightsDEBUG.exe
+        print('Controllers')
+        print(_o_run.controller_o.controller_names)
 
 class HeadlightControl:
     """
@@ -144,6 +146,7 @@ class HeadlightControl:
     _car_has_headlights = True # Until we find otherwise
     tested_car_has_headlights = False
     car_is_moving = False # Initially
+    _headlights_state_on_pit_entry = False # Initially
 
     def __init__(self) -> None:
         """ docstring """
@@ -195,6 +198,7 @@ class HeadlightControl:
             if not self.__not_in_pit_lane():
                 if not self._in_pit_lane:
                     status_poker_fn('Entered pit lane')
+                    self._headlights_state_on_pit_entry = self.are_headlights_on()
                     self.pit_lane_flashes(pit_flash_duration)
                     self._in_pit_lane = True
             else:
@@ -335,7 +339,7 @@ class HeadlightControl:
         if self.headlight_control_is_live() and not stopping_callback():
             self._flashing = True
             if self.__ignition_is_on():
-                if self.car_is_moving():
+                if self.car_is_moving(): # Only flash if the car is moving
                     self.on()
             else:
                 status_poker_fn('Engine not running')

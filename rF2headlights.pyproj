@@ -29,6 +29,9 @@
   <ItemGroup>
     <Compile Include="configIni.py" />
     <Compile Include="gui.py" />
+    <Compile Include="joy.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="lib\tkToolTip.py" />
     <Compile Include="lib\__init__.py" />
     <Compile Include="makeVersionText.py" />

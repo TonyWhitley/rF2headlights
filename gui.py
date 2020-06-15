@@ -292,17 +292,19 @@ class ControlFrame(Tab):
                     else:   # 'QUIT'
                         break
                 if self.pygame_event.type == 2:  # pygame.KEYDOWN
-                    dik = KeycodeToDIK(self.pygame_event.keycode)
-                    self.headlight_controls[name]['svControl'].set(dik)
-                    # if dik.startswith('DIK_'):
-                    #    dik = dik[len('DIK_'):]
-                    self.headlight_controls[name]['tkLabel'].configure(
-                        text=dik)
-                    self.headlight_controls[name]['ControllerName'].configure(
-                        text=KEYBOARD)
-                    self.headlight_controls[name]['svControllerName'].set(
-                        KEYBOARD)
-                    return self.pygame_event.char
+                    if name == 'rFactor Toggle':
+                        # This program's controls must not be a key
+                        dik = KeycodeToDIK(self.pygame_event.keycode)
+                        self.headlight_controls[name]['svControl'].set(dik)
+                        # if dik.startswith('DIK_'):
+                        #    dik = dik[len('DIK_'):]
+                        self.headlight_controls[name]['tkLabel'].configure(
+                            text=dik)
+                        self.headlight_controls[name]['ControllerName'].configure(
+                            text=KEYBOARD)
+                        self.headlight_controls[name]['svControllerName'].set(
+                            KEYBOARD)
+                        return self.pygame_event.char
                 else:
                     if name != 'rFactor Toggle':
                         # The control sent to rFactor must be a key
@@ -880,6 +882,8 @@ class Run:
                     # not a joystick button
                     pass
                 self.pygame_event = None
+    def _get_controllers(self):
+        return self.controller_o.controller_names
 
 
 def run(_root, tabConfigureFlash):
