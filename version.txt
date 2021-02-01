@@ -31,7 +31,7 @@ VSVersionInfo(
         u'040904b0',
         [StringStruct(u'CompanyName', u'Seven Smiles :)'),
         StringStruct(u'FileDescription', u'rFactor 2 Headlights Control'),
-        StringStruct(u'FileVersion', u'1.8.71.0'),
+        StringStruct(u'FileVersion', u'1.8.72.0'),
         StringStruct(u'InternalName', u'rFactor 2 Headlight Control'),
         StringStruct(u'LegalCopyright', u'(c) 2019-21 Tony Whitley. All rights reserved.'),
         StringStruct(u'OriginalFilename', u'rF2headlights.exe'),
