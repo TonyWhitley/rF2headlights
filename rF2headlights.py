@@ -66,6 +66,9 @@ def main():
     def pit_lane():
         return config_o.get('miscellaneous', 'pit_lane') == '1'
 
+    def flash_count():
+        return (int(config_o.get('miscellaneous', 'flash_count')))
+
     def flash_duration():
         return (int(config_o.get('miscellaneous', 'flash_on_time')),
                 int(config_o.get('miscellaneous', 'flash_off_time')))
@@ -175,7 +178,7 @@ class HeadlightControl:
 
     def four_flashes(self, flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
-        self._count = 8  # 4 flashes
+        self._count = flash_count * 2
         self.start_flashing(self.count_down, flash_duration)
 
     def pit_limiter_flashes(self, pit_flash_duration) -> None:

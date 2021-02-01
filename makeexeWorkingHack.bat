@@ -1,14 +1,14 @@
 ::@echo off
 setlocal
 
-python -V | find "3.8"
-if errorlevel 1 goto not38
+python -V | find "3.7"
+if errorlevel 1 goto not37
 ::python -V
 echo pyinstaller only works with versions up to 3.7
 pause
 goto :eof
 
-:not38
+:not37
 rem set path=c:\Python36;c:\Python36\scripts;%path%
 rem set path=%path%;"C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x64"
 
