@@ -42,9 +42,9 @@ def status_poker_fn(string) -> None:
         pass
 
 
-BUILD_REVISION = 64  # The git commit count
-versionStr = 'rFactor 2 Headlight Controls V0.7.%d' % BUILD_REVISION
-versionDate = '2020-01-17'
+BUILD_REVISION = 71  # The git commit count
+versionStr = 'rFactor 2 Headlight Controls V1.8.%d' % BUILD_REVISION
+versionDate = '2021-02-01'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -440,6 +440,27 @@ class headlightOptionsFrame(ControlFrame):
 
         ##########################################################
         _row = 9
+        tkLabel_flash_count = tk.Label(self.tkFrame_headlight_control,
+                                         text='Overtake flash count')
+        tkLabel_flash_count.grid(sticky='se',
+                                   column=0,
+                                   row=_row)
+        self.tkSlider_flash_count = tk.Scale(self.tkFrame_headlight_control,
+                                               from_=2,
+                                               to=10,
+                                               resolution=1,
+                                               orient=tk.HORIZONTAL)
+
+        self.tkSlider_flash_count.grid(sticky='w',
+                                         column=1,
+                                         row=_row)
+        x = self.config_o.get('miscellaneous', 'flash_count')
+        if not x:
+            x = 4
+        self.tkSlider_flash_count.set(x)
+
+        ##########################################################
+        _row +=1
         tkLabel_flash_on_time = tk.Label(self.tkFrame_headlight_control,
                                          text='Overtake flash ON time')
         tkLabel_flash_on_time.grid(sticky='se',
@@ -588,6 +609,8 @@ class headlightOptionsFrame(ControlFrame):
                           str(self.pit_lane.get()))
         self.config_o.set('miscellaneous', 'default_to_on',
                           str(self.default_to_on.get()))
+        self.config_o.set('miscellaneous', 'flash_count',
+                          str(self.tkSlider_flash_count.get()))
         self.config_o.set('miscellaneous', 'flash_on_time',
                           str(self.tkSlider_flash_on_time.get()))
         self.config_o.set('miscellaneous', 'flash_off_time',

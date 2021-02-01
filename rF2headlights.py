@@ -133,6 +133,7 @@ class HeadlightControl:
     """
     headlightState = None
     headlightToggleDIK = None
+    flash_count = 4
     _flashing = False
     _count = 0
     timer = (None, None)  # On time, off time
@@ -158,6 +159,8 @@ class HeadlightControl:
         else:
             status_poker_fn('\nHeadlight toggle control must be a key.\n')
             quit_program(99)
+        self.flash_count = int(config_o.get('miscellaneous', 'flash_count'))
+
 
     def count_down(self) -> bool:
         """
@@ -169,7 +172,7 @@ class HeadlightControl:
 
     def four_flashes(self, flash_duration) -> None:
         """ Flash four times (e.g. for overtaking) """
-        self._count = 8  # 4 flashes
+        self._count = self.flash_count * 2
         self.start_flashing(self.count_down, flash_duration)
 
     def pit_limiter_flashes(self, pit_flash_duration) -> None:
