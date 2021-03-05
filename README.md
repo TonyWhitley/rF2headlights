@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 # rF2headlights
 Flash the headlights in rFactor 2 when a button is pressed.
 Also offers controls to turn headlights on or off, regardless of whether they are on at the time (as opposed to rFactor's control which just toggles them).
