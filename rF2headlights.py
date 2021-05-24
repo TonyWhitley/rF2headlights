@@ -19,6 +19,7 @@ from gui import run, gui_main, status_poker_fn, KEYBOARD, TIMER_EVENT
 
 global bypass_timer
 bypass_timer = False     # Set for testing, timer calls callback immediately
+global flash_count
 
 ##########################################################################
 
@@ -54,6 +55,7 @@ def quit_program(errorCode: int) -> None:
 def main():
     """ docstring """
     global bypass_timer
+    global flash_count
 
     headlightFlash_o = HeadlightControl()
     # headlightFlash_o._fake_status()
@@ -65,9 +67,6 @@ def main():
 
     def pit_lane():
         return config_o.get('miscellaneous', 'pit_lane') == '1'
-
-    def flash_count():
-        return (int(config_o.get('miscellaneous', 'flash_count')))
 
     def flash_duration():
         return (int(config_o.get('miscellaneous', 'flash_on_time')),
@@ -82,6 +81,8 @@ def main():
 
     def on_automatically():
         return int(config_o.get('miscellaneous', 'on_automatically'))
+
+    flash_count = (int(config_o.get('miscellaneous', 'flash_count')))
 
     _root, tabConfigureFlash = gui_main()
     _player_is_driving = False
@@ -112,7 +113,7 @@ def main():
                 headlightFlash_o.four_flashes(flash_duration())
                 status_poker_fn('Overtaking flash')
             if _cmd == 'Toggle headlights':
-                headlightFlash_o.toggle()
+                headlightFlash_o.turn_on()
                 status_poker_fn('Headlights toggle')
             if _cmd == TIMER_EVENT:
                 if pit_limiter():
@@ -148,7 +149,7 @@ class HeadlightControl:
     _fake_escape_pressed = False
     _car_has_headlights = True # Until we find otherwise
     tested_car_has_headlights = False
-    car_is_moving = False # Initially
+    #// car_is_moving = False # Initially
     _headlights_state_on_pit_entry = False # Initially
 
     def __init__(self) -> None:
@@ -171,7 +172,7 @@ class HeadlightControl:
     def count_down(self) -> bool:
         """
         Stopping callback function
-        Returns True is count as expired.
+        Returns True if count has expired.
         """
         self._count -= 1
         return self._count <= 0
@@ -215,13 +216,13 @@ class HeadlightControl:
         """ Turn them on regardless """
         # status_poker_fn('on')
         if not self.are_headlights_on():
-            self.toggle()
+            self.turn_on()
 
     def off(self) -> None:
         """ Turn them off regardless """
         # status_poker_fn('off')
         if self.are_headlights_on():
-            self.toggle()
+            self.turn_off()
 
     def automatic_headlights(self, on_automatically) -> None:
         """
@@ -267,7 +268,7 @@ class HeadlightControl:
         # Need to retest every time the track is loaded
         if not self.tested_car_has_headlights:
             _save = self.are_headlights_on()
-            self.toggle(testing_car_has_headlights=True)
+            self.turn_on(testing_car_has_headlights=True)
             if sharedMemoryAPI.Cbytestring2Python(self._info.Rf2Ext.mLastHistoryMessage) == \
                 'Headlights: N/A':
                 self._car_has_headlights = False
@@ -298,16 +299,21 @@ class HeadlightControl:
         self._timestamp = self._info.playersVehicleTelemetry().mElapsedTime
         return self.escape_pressed
 
-    def toggle(self, testing_car_has_headlights=False) -> None:
+    def turn_on(self, testing_car_has_headlights=False) -> None:
         """
         Now this program is controlling the headlights a replacement
         for the headlight control is needed.
+        As of 19/5/2021 version headlight controls are on/off/auto
         """
-        # status_poker_fn('H')
-        # self._info.playersVehicleTelemetry().mHeadlights = not \
-        #    self._info.playersVehicleTelemetry().mHeadlights
         if testing_car_has_headlights or self.car_has_headlights():
-            PressReleaseKey(self.headlightToggleDIK)
+            while not self.are_headlights_on():
+                PressReleaseKey(self.headlightToggleDIK)
+                time.sleep(0.001)   # Let SM get a look in
+
+    def turn_off(self, testing_car_has_headlights=False) -> None:
+        if testing_car_has_headlights or self.car_has_headlights():
+            while self.are_headlights_on():
+                PressReleaseKey(self.headlightToggleDIK)
 
     def start_flashing(self, stopping_callback, flash_timer) -> None:
         """ Start flashing (if not already) """
@@ -339,6 +345,7 @@ class HeadlightControl:
 
     def __toggle_on(self, stopping_callback) -> None:
         """ Toggle the headlights on unless it's time to stop """
+        #status_poker_fn("toggle_on")
         if self.headlight_control_is_live() and not stopping_callback():
             self._flashing = True
             if self.__ignition_is_on():
@@ -355,6 +362,7 @@ class HeadlightControl:
 
     def __toggle_off(self, stopping_callback) -> None:
         """ Toggle the headlights off unless it's time to stop """
+        #status_poker_fn("toggle_off")
         if self.headlight_control_is_live() and not stopping_callback():
             self._flashing = True
             self.off()
@@ -369,14 +377,16 @@ class HeadlightControl:
         """ docstring """
         if self._flashing:
             # Check that headlights in same start as originally
-            if self.headlightState != self.are_headlights_on():
-                # toggle the headlights again
-                self.toggle()
+            if self.headlightState:
+                self.turn_on()
+            else:
+                self.turn_off()
             self._flashing = False
 
     def are_headlights_on(self) -> bool:
         """ Are they on? """
-        return self._info.playersVehicleTelemetry().mHeadlights != 0
+        #status_poker_fn("mHeadlights: " + str(self._info.playersVehicleTelemetry().mHeadlights))
+        return self._info.playersVehicleTelemetry().mHeadlights == 1
 
     def __not_in_pit_lane(self) -> bool:
         """ Used to stop when not in the pit lane """

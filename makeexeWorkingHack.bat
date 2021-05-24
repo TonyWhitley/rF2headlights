@@ -1,7 +1,7 @@
 ::@echo off
 setlocal
 
-python -V | find "3.7"
+python -V | find "3.8"
 if errorlevel 1 goto not37
 ::python -V
 echo pyinstaller only works with versions up to 3.7
