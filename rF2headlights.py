@@ -149,7 +149,6 @@ class HeadlightControl:
     _fake_escape_pressed = False
     _car_has_headlights = True # Until we find otherwise
     tested_car_has_headlights = False
-    #// car_is_moving = False # Initially
     _headlights_state_on_pit_entry = False # Initially
 
     def __init__(self) -> None:
