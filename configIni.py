@@ -25,6 +25,7 @@ MISC_VALUES = {
     # 3     At least half of the other drivers have them on
     # 4     All the other drivers have them on
     'controller_file': '%ProgramFiles(x86)%/Steam/steamapps/common/rFactor 2/Userdata/player/controller.json',
+    'flash_count': '4'
 }
 
 

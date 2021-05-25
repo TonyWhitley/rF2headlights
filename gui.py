@@ -42,9 +42,9 @@ def status_poker_fn(string) -> None:
         pass
 
 
-BUILD_REVISION = 74  # The git commit count
+BUILD_REVISION = 75  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V1.9.%d' % BUILD_REVISION
-versionDate = '2021-05-24'
+versionDate = '2021-05-25'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
