@@ -16,6 +16,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import tkinter.font as font
 import sys
+import pygame
 
 sys.path.append('rF2headlights')
 
@@ -42,9 +43,9 @@ def status_poker_fn(string) -> None:
         pass
 
 
-BUILD_REVISION = 75  # The git commit count
+BUILD_REVISION = 79  # The git commit count
 versionStr = 'rFactor 2 Headlight Controls V1.9.%d' % BUILD_REVISION
-versionDate = '2021-05-25'
+versionDate = '2021-06-05'
 
 program_credits = "Reads the headlight state from rF2 using a Python\n" \
     "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -291,7 +292,7 @@ class ControlFrame(Tab):
                         continue
                     else:   # 'QUIT'
                         break
-                if self.pygame_event.type == 2:  # pygame.KEYDOWN
+                if self.pygame_event.type == pygame.KEYDOWN:
                     if name == 'rFactor Toggle':
                         # This program's controls must not be a key
                         dik = KeycodeToDIK(self.pygame_event.keycode)
